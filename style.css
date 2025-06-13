@@ -1,0 +1,68 @@
+.sortable-drag {
+  transform: rotate(5deg) scale(1.05) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  opacity: 0.9 !important;
+  z-index: 1000 !important;
+}
+.sortable-ghost {
+  opacity: 0.3 !important;
+}
+.sortable-chosen {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+}
+.cursor-move {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+* {
+  -webkit-user-drag: none;
+}
+.sortable-drag * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  pointer-events: none !important;
+}
+.drop-zone {
+  border: 2px dashed #cbd5e1;
+  transition: all 0.2s ease;
+}
+.drop-zone.drag-over {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+.image-preview {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.confetti-container {
+  overflow: hidden;
+}
+
+.confetti-particle {
+  user-select: none;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
