@@ -27,8 +27,9 @@ switch ($method) {
     case 'POST':
         if ($path === '/tasks') {
             $data = json_decode(file_get_contents('php://input'), true);
-            $stmt = $pdo->prepare("INSERT INTO tasks (title, description, status) VALUES (?, ?, ?)");
-            $stmt->execute([$data['title'], $data['description'] ?? '', $data['status'] ?? 'todo']);
+            $images = isset($data['images']) ? json_encode($data['images']) : null;
+            $stmt = $pdo->prepare("INSERT INTO tasks (title, description, status, image) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$data['title'], $data['description'] ?? '', $data['status'] ?? 'todo', $images]);
             echo json_encode(['id' => $pdo->lastInsertId()]);
         }
         break;
@@ -37,8 +38,9 @@ switch ($method) {
         if (preg_match('/\/tasks\/(\d+)/', $path, $matches)) {
             $id = $matches[1];
             $data = json_decode(file_get_contents('php://input'), true);
-            $stmt = $pdo->prepare("UPDATE tasks SET title = ?, description = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            $stmt->execute([$data['title'], $data['description'], $data['status'], $id]);
+            $images = isset($data['images']) ? json_encode($data['images']) : null;
+            $stmt = $pdo->prepare("UPDATE tasks SET title = ?, description = ?, status = ?, image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([$data['title'], $data['description'], $data['status'], $images, $id]);
             echo json_encode(['success' => true]);
         }
         break;

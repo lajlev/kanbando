@@ -18,6 +18,7 @@ class Database {
             title TEXT NOT NULL,
             description TEXT,
             status TEXT DEFAULT 'todo',
+            image TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )";
