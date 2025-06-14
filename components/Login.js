@@ -10,11 +10,8 @@ const Login = {
             </svg>
           </div>
           <h2 class="mt-6 text-center text-3xl font-light text-gray-900">
-            Sign in to KanbanDo
+            Sign in to Fruity Ideas 🍇 💡
           </h2>
-          <p class="mt-2 text-center text-sm text-gray-600">
-            Welcome to Marmelade Ideas 🍇 💡
-          </p>
         </div>
         <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
           <div class="rounded-md shadow-sm -space-y-px">
@@ -59,7 +56,7 @@ const Login = {
           </div>
           
           <div class="text-center text-xs text-gray-500">
-            Default login: admin / admin
+            Talk to Michael for getting a log in.
           </div>
         </form>
       </div>
@@ -68,42 +65,42 @@ const Login = {
   data() {
     return {
       credentials: {
-        username: '',
-        password: ''
+        username: "",
+        password: "",
       },
-      error: '',
-      isLoading: false
+      error: "",
+      isLoading: false,
     };
   },
-  emits: ['login-success'],
+  emits: ["login-success"],
   methods: {
     async handleLogin() {
-      this.error = '';
+      this.error = "";
       this.isLoading = true;
-      
+
       try {
-        const response = await fetch('auth.php/login', {
-          method: 'POST',
+        const response = await fetch("auth.php/login", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          credentials: 'include',
-          body: JSON.stringify(this.credentials)
+          credentials: "include",
+          body: JSON.stringify(this.credentials),
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
-          this.$emit('login-success', result.user);
+          this.$emit("login-success", result.user);
         } else {
-          this.error = result.error || 'Login failed';
+          this.error = result.error || "Login failed";
         }
       } catch (error) {
-        console.error('Login error:', error);
-        this.error = 'Network error. Please try again.';
+        console.error("Login error:", error);
+        this.error = "Network error. Please try again.";
       } finally {
         this.isLoading = false;
       }
-    }
-  }
+    },
+  },
 };

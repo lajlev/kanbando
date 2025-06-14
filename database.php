@@ -39,9 +39,9 @@ class Database {
         $userCount = $stmt->fetchColumn();
         
         if ($userCount == 0) {
-            $defaultPassword = password_hash('admin', PASSWORD_DEFAULT);
+            $defaultPassword = password_hash('Marmalade!', PASSWORD_DEFAULT);
             $stmt = $this->pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-            $stmt->execute(['admin', $defaultPassword]);
+            $stmt->execute(['fruityai', $defaultPassword]);
         }
     }
     
