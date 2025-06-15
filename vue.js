@@ -11,6 +11,7 @@ const app = createApp({
       showDeleteModal: false,
       showViewModal: false,
       showImageModal: false,
+      showSettingsModal: false,
       editingTask: null,
       viewingTask: null,
       taskForm: {
@@ -27,15 +28,46 @@ const app = createApp({
         { key: "progress", name: "In Progress" },
         { key: "done", name: "Done" },
       ],
+      settings: {
+        appName: "KanbanDo",
+        appLogo: null,
+        themeMode: "auto", // auto, light, dark
+      },
+      showMobileMenu: false,
     };
   },
   async mounted() {
+    this.loadSettings();
+    this.applyTheme();
+    this.showMobileMenu = false; // Ensure mobile menu is closed on init
+    console.log('Initial showMobileMenu:', this.showMobileMenu);
     await this.checkAuth();
     if (this.isAuthenticated) {
       await this.loadTasks();
       this.initSortable();
       this.setupKeyboardShortcuts();
       this.setupPasteListener();
+    }
+    
+    // Listen for system theme changes
+    this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    this.handleSystemThemeChange = () => {
+      if (this.settings.themeMode === 'auto') {
+        this.applyTheme();
+      }
+    };
+    this.mediaQuery.addEventListener('change', this.handleSystemThemeChange);
+  },
+  
+  beforeUnmount() {
+    if (this.mediaQuery) {
+      this.mediaQuery.removeEventListener('change', this.handleSystemThemeChange);
+    }
+  },
+  
+  watch: {
+    showMobileMenu(newVal, oldVal) {
+      console.log('showMobileMenu changed from', oldVal, 'to', newVal);
     }
   },
   methods: {
@@ -491,12 +523,122 @@ const app = createApp({
         }
       });
     },
+    
+    // Settings methods
+    loadSettings() {
+      const savedSettings = localStorage.getItem('kanbanSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        
+        // Migration: convert old darkMode setting to new themeMode
+        if (parsed.hasOwnProperty('darkMode') && !parsed.hasOwnProperty('themeMode')) {
+          parsed.themeMode = parsed.darkMode ? 'dark' : 'light';
+          delete parsed.darkMode;
+        }
+        
+        this.settings = { ...this.settings, ...parsed };
+      }
+    },
+    
+    saveSettings() {
+      localStorage.setItem('kanbanSettings', JSON.stringify(this.settings));
+      this.applyTheme();
+    },
+    
+    applyTheme() {
+      const isDark = this.getEffectiveDarkMode();
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    },
+    
+    getEffectiveDarkMode() {
+      switch (this.settings.themeMode) {
+        case 'dark':
+          return true;
+        case 'light':
+          return false;
+        case 'auto':
+        default:
+          return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+    },
+    
+    toggleThemeMode() {
+      const modes = ['auto', 'light', 'dark'];
+      const currentIndex = modes.indexOf(this.settings.themeMode);
+      const nextIndex = (currentIndex + 1) % modes.length;
+      this.settings.themeMode = modes[nextIndex];
+      this.saveSettings();
+    },
+    
+    setThemeMode(mode) {
+      this.settings.themeMode = mode;
+      this.saveSettings();
+    },
+    
+    openSettings() {
+      this.showSettingsModal = true;
+    },
+    
+    closeSettings() {
+      this.showSettingsModal = false;
+    },
+    
+    saveSettingsFromModal(newSettings) {
+      this.settings = { ...this.settings, ...newSettings };
+      this.saveSettings();
+    },
+    
+    async handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Logo file too large. Maximum size is 2MB');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      try {
+        const response = await fetch('upload_logo.php', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          this.settings.appLogo = result.path;
+          this.saveSettings();
+        } else {
+          alert('Logo upload failed: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Logo upload error:', error);
+      }
+    },
+    
+    removeLogo() {
+      this.settings.appLogo = null;
+      this.saveSettings();
+    },
+    
+    closeMobileMenu() {
+      this.showMobileMenu = false;
+    },
+    
+    
   },
 });
 
 app.component('login-form', Login);
 app.component('app-header', Header);
 app.component('dropdown-menu', DropdownMenu);
+app.component('settings-modal', SettingsModal);
 app.component('kanban-board', KanbanBoard);
 app.component('task-modal', TaskModal);
 app.component('delete-modal', DeleteModal);

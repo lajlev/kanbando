@@ -1,15 +1,27 @@
 const KanbanBoard = {
   template: `
-    <div class="max-w-[80%] mx-auto px-5">
-      <div class="flex gap-5 h-[90vh] w-full">
+    <div class="max-w-[95%] md:max-w-[90%] mx-auto px-3 md:px-5 py-4 md:py-6">
+      <div class="flex flex-col md:flex-row gap-4 md:gap-5 min-h-[80vh] md:h-[90vh] w-full">
         <div
-          class="w-[30%] bg-white rounded-lg p-5 shadow-lg transition-all duration-300 flex flex-col"
+          class="w-full md:w-[30%] bg-white dark:bg-gray-800 rounded-lg p-4 md:p-5 shadow-lg transition-all duration-300 flex flex-col border border-gray-200 dark:border-gray-700"
           v-for="status in statuses"
           :key="status.key"
         >
-          <h3 class="text-sm font-semibold mb-4 uppercase text-gray-600">
-            {{ status.name }}
-          </h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-semibold uppercase text-gray-600 dark:text-gray-400">
+              {{ status.name }}
+            </h3>
+            <button
+              v-if="status.key === 'todo'"
+              @click="openModal(status.key)"
+              class="md:hidden w-6 h-6 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 flex items-center justify-center transition-colors"
+              title="Add new idea"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
+          </div>
           <div
             :id="status.key"
             class="flex-1 min-h-0 transition-all duration-200"
@@ -17,16 +29,16 @@ const KanbanBoard = {
             <div
               v-for="task in getTasksByStatus(status.key)"
               :key="task.id"
-              class="bg-gray-50 border border-gray-300 rounded p-3 mb-2.5 cursor-move transition-all duration-200 hover:bg-gray-100 hover:-translate-y-0.5 hover:shadow-md"
+              class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-3 mb-2.5 cursor-pointer transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600"
               :class="{ 'opacity-50': status.key === 'done' }"
               :data-id="task.id"
               @click="viewTask(task)"
             >
-              <div class="font-medium mb-1">
+              <div class="font-medium mb-1 text-gray-900 dark:text-gray-100">
                 {{ task.title }}
               </div>
               <div
-                class="text-xs text-gray-600"
+                class="text-xs text-gray-600 dark:text-gray-400"
                 v-if="task.description"
               >
                 {{ task.description }}
@@ -56,10 +68,10 @@ const KanbanBoard = {
           </div>
           <button
             v-if="status.key === 'todo'"
-            class="w-full py-2.5 px-2.5 border-2 border-dashed border-gray-300 bg-transparent rounded cursor-pointer text-gray-600 hover:border-blue-500 hover:text-blue-500 transition-colors mt-4"
+            class="hidden md:block w-full py-3 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-transparent rounded cursor-pointer text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 dark:hover:border-blue-400 dark:hover:text-blue-400 transition-colors mt-4 active:bg-blue-50 dark:active:bg-gray-700"
             @click="openModal(status.key)"
           >
-            New Task
+            New Idea
           </button>
         </div>
       </div>

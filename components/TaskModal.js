@@ -2,30 +2,30 @@ const TaskModal = {
   template: `
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       @click="closeModal"
     >
       <div
-        class="bg-white p-8 rounded-lg w-[36%] max-w-[90%]"
+        class="bg-white dark:bg-gray-800 p-4 md:p-6 lg:p-8 rounded-lg w-full md:w-[36%] max-w-[95%] md:max-w-[90%] max-h-[90vh] overflow-y-auto"
         @click.stop
       >
-        <h3 class="text-lg font-semibold mb-6">
-          {{ editingTask ? 'Edit Task' : 'Add Task' }}
+        <h3 class="text-lg font-semibold mb-6 text-gray-900 dark:text-white">
+          {{ editingTask ? 'Edit' : 'New Idea' }}
         </h3>
         <div class="mb-5">
-          <label class="block mb-1 font-medium">Title</label>
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Title</label>
           <input
             v-model="taskForm.title"
             placeholder="Task title"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           />
         </div>
         <div class="mb-5">
-          <label class="block mb-1 font-medium">Description</label>
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Description</label>
           <textarea
             v-model="taskForm.description"
             placeholder="Task description"
-            class="w-full px-3 py-2 border border-gray-300 rounded h-20 resize-y focus:outline-none focus:border-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded h-20 resize-y focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           ></textarea>
         </div>
         <div class="mb-5">
