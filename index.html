@@ -12,30 +12,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: 'class',
+        darkMode: "class",
         theme: {
           extend: {},
         },
-      }
+      };
     </script>
-    <link rel="stylesheet" href="style.css">
+    <link
+      rel="stylesheet"
+      href="style.css"
+    />
   </head>
   <body>
     <div
       id="app"
       class="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans transition-colors duration-300"
     >
-      
       <!-- Mobile menu button -->
-      <div v-if="isAuthenticated" class="fixed top-4 right-4 z-50 md:hidden">
+      <div
+        v-if="isAuthenticated"
+        class="fixed top-4 right-6 z-50 md:hidden"
+      >
         <div class="relative">
           <button
             @click="showMobileMenu = !showMobileMenu"
-            class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 active:scale-95 transition-transform text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            class="transition-transform text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
             </svg>
           </button>
           <dropdown-menu
@@ -50,88 +70,93 @@
         </div>
       </div>
       <!-- Loading state -->
-      <div v-if="isCheckingAuth" class="min-h-screen flex items-center justify-center">
+      <div
+        v-if="isCheckingAuth"
+        class="min-h-screen flex items-center justify-center"
+      >
         <div class="text-gray-600">Loading...</div>
       </div>
-      
+
       <!-- Login form -->
       <login-form
         v-else-if="!isAuthenticated"
         @login-success="handleLogin"
       ></login-form>
-      
+
       <!-- Main app -->
       <template v-else>
-        <app-header
+        <app-sidebar
           :current-user="currentUser"
           :settings="settings"
           @delete-unused-images="deleteUnusedImages"
           @delete-all-done-tasks="deleteDoneTasks"
           @open-settings="openSettings"
           @logout="logout"
-        ></app-header>
+        ></app-sidebar>
 
-      <div class="ml-0 md:ml-16 pt-6 pr-20 md:pt-0 md:pr-0 transition-all duration-300">
-        <kanban-board
-        :tasks="tasks"
-        :statuses="statuses"
-        @view-task="viewTask"
-        @view-full-image="viewFullImage"
-        @delete-done-tasks="deleteDoneTasks"
-        @open-modal="openModal"
-      ></kanban-board>
+        <div
+          class="ml-0 md:ml-16 pt-12 md:pt-0 md:pr-0 transition-all duration-300"
+        >
+          <kanban-board
+            :tasks="tasks"
+            :statuses="statuses"
+            @view-task="viewTask"
+            @view-full-image="viewFullImage"
+            @delete-done-tasks="deleteDoneTasks"
+            @open-modal="openModal"
+          ></kanban-board>
 
-      <task-modal
-        :show-modal="showModal"
-        :editing-task="editingTask"
-        :task-form="taskForm"
-        :image-previews="imagePreviews"
-        :is-drag-over="isDragOver"
-        @close-modal="closeModal"
-        @save-task="saveTask"
-        @confirm-delete-task="confirmDeleteTask"
-        @handle-file-select="handleFileSelect"
-        @handle-drop="handleDrop"
-        @remove-image="removeImage"
-      ></task-modal>
+          <task-modal
+            :show-modal="showModal"
+            :editing-task="editingTask"
+            :task-form="taskForm"
+            :image-previews="imagePreviews"
+            :is-drag-over="isDragOver"
+            @close-modal="closeModal"
+            @save-task="saveTask"
+            @confirm-delete-task="confirmDeleteTask"
+            @handle-file-select="handleFileSelect"
+            @handle-drop="handleDrop"
+            @remove-image="removeImage"
+          ></task-modal>
 
-      <delete-modal
-        :show-delete-modal="showDeleteModal"
-        :done-tasks-count="getDoneTasksCount()"
-        @close-delete-modal="closeDeleteModal"
-        @confirm-delete-done-tasks="confirmDeleteDoneTasks"
-      ></delete-modal>
+          <delete-modal
+            :show-delete-modal="showDeleteModal"
+            :done-tasks-count="getDoneTasksCount()"
+            @close-delete-modal="closeDeleteModal"
+            @confirm-delete-done-tasks="confirmDeleteDoneTasks"
+          ></delete-modal>
 
-      <view-modal
-        :show-view-modal="showViewModal"
-        :viewing-task="viewingTask"
-        @close-view-modal="closeViewModal"
-        @edit-from-view="editFromView"
-        @view-full-image="viewFullImage"
-      ></view-modal>
+          <view-modal
+            :show-view-modal="showViewModal"
+            :viewing-task="viewingTask"
+            @close-view-modal="closeViewModal"
+            @edit-from-view="editFromView"
+            @view-full-image="viewFullImage"
+          ></view-modal>
 
-      <image-modal
-        :show-image-modal="showImageModal"
-        :full-size-image="fullSizeImage"
-        @close-image-modal="closeImageModal"
-      ></image-modal>
+          <image-modal
+            :show-image-modal="showImageModal"
+            :full-size-image="fullSizeImage"
+            @close-image-modal="closeImageModal"
+          ></image-modal>
 
-        <settings-modal
-          :show="showSettingsModal"
-          :settings="settings"
-          @close="closeSettings"
-          @save="saveSettingsFromModal"
-          @upload-logo="handleLogoUpload"
-          @remove-logo="removeLogo"
-        ></settings-modal>
+          <settings-modal
+            :show="showSettingsModal"
+            :settings="settings"
+            @close="closeSettings"
+            @save="saveSettingsFromModal"
+            @upload-logo="handleLogoUpload"
+            @remove-logo="removeLogo"
+          ></settings-modal>
 
-        <confetti ref="confetti"></confetti>
-      </div>
+          <confetti ref="confetti"></confetti>
+        </div>
       </template>
     </div>
 
     <script src="components/Login.js"></script>
-    <script src="components/Header.js"></script>
+    <script src="components/Sidebar.js"></script>
     <script src="components/DropdownMenu.js"></script>
     <script src="components/SettingsModal.js"></script>
     <script src="components/KanbanBoard.js"></script>

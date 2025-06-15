@@ -56,7 +56,7 @@ const Login = {
           </div>
           
           <div class="text-center text-xs text-gray-500">
-            Talk to Michael for getting a log in.
+            Find login info in readme file.
           </div>
         </form>
       </div>

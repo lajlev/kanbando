@@ -40,7 +40,7 @@ const app = createApp({
     this.loadSettings();
     this.applyTheme();
     this.showMobileMenu = false; // Ensure mobile menu is closed on init
-    console.log('Initial showMobileMenu:', this.showMobileMenu);
+    console.log("Initial showMobileMenu:", this.showMobileMenu);
     await this.checkAuth();
     if (this.isAuthenticated) {
       await this.loadTasks();
@@ -48,46 +48,49 @@ const app = createApp({
       this.setupKeyboardShortcuts();
       this.setupPasteListener();
     }
-    
+
     // Listen for system theme changes
-    this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    this.mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     this.handleSystemThemeChange = () => {
-      if (this.settings.themeMode === 'auto') {
+      if (this.settings.themeMode === "auto") {
         this.applyTheme();
       }
     };
-    this.mediaQuery.addEventListener('change', this.handleSystemThemeChange);
+    this.mediaQuery.addEventListener("change", this.handleSystemThemeChange);
   },
-  
+
   beforeUnmount() {
     if (this.mediaQuery) {
-      this.mediaQuery.removeEventListener('change', this.handleSystemThemeChange);
+      this.mediaQuery.removeEventListener(
+        "change",
+        this.handleSystemThemeChange
+      );
     }
   },
-  
+
   watch: {
     showMobileMenu(newVal, oldVal) {
-      console.log('showMobileMenu changed from', oldVal, 'to', newVal);
-    }
+      console.log("showMobileMenu changed from", oldVal, "to", newVal);
+    },
   },
   methods: {
     async checkAuth() {
       try {
-        const response = await fetch('auth.php/check', {
-          credentials: 'include'
+        const response = await fetch("auth.php/check", {
+          credentials: "include",
         });
         const result = await response.json();
-        
+
         this.isAuthenticated = result.authenticated;
         this.currentUser = result.user || null;
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error("Auth check error:", error);
         this.isAuthenticated = false;
       } finally {
         this.isCheckingAuth = false;
       }
     },
-    
+
     handleLogin(user) {
       this.isAuthenticated = true;
       this.currentUser = user;
@@ -96,32 +99,32 @@ const app = createApp({
       this.setupKeyboardShortcuts();
       this.setupPasteListener();
     },
-    
+
     async logout() {
       try {
-        await fetch('auth.php/logout', {
-          method: 'POST',
-          credentials: 'include'
+        await fetch("auth.php/logout", {
+          method: "POST",
+          credentials: "include",
         });
         this.isAuthenticated = false;
         this.currentUser = null;
         this.tasks = [];
       } catch (error) {
-        console.error('Logout error:', error);
+        console.error("Logout error:", error);
       }
     },
-    
+
     async loadTasks() {
       try {
         const response = await fetch("api.php/tasks", {
-          credentials: 'include'
+          credentials: "include",
         });
-        
+
         if (response.status === 401) {
           this.isAuthenticated = false;
           return;
         }
-        
+
         this.tasks = await response.json();
       } catch (error) {
         console.error("Error loading tasks:", error);
@@ -136,15 +139,15 @@ const app = createApp({
     editTask(task) {
       this.taskForm = { ...task };
       this.editingTask = task;
-      
+
       // Convert images to the new format
       const images = this.getTaskImages(task);
       this.taskForm.images = images;
-      this.imagePreviews = images.map(img => ({
+      this.imagePreviews = images.map((img) => ({
         filename: img,
-        url: 'uploads/' + img
+        url: "uploads/" + img,
       }));
-      
+
       this.showModal = true;
     },
     closeModal() {
@@ -164,14 +167,14 @@ const app = createApp({
           await fetch(`api.php/tasks/${this.editingTask.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            credentials: 'include',
+            credentials: "include",
             body: JSON.stringify(this.taskForm),
           });
         } else {
           await fetch("api.php/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: 'include',
+            credentials: "include",
             body: JSON.stringify(this.taskForm),
           });
         }
@@ -196,9 +199,9 @@ const app = createApp({
     },
     async deleteTask(id) {
       try {
-        await fetch(`api.php/tasks/${id}`, { 
+        await fetch(`api.php/tasks/${id}`, {
           method: "DELETE",
-          credentials: 'include'
+          credentials: "include",
         });
         await this.loadTasks();
         this.closeModal();
@@ -211,12 +214,12 @@ const app = createApp({
       if (task) {
         const oldStatus = task.status;
         task.status = newStatus;
-        
+
         // Trigger confetti if task moved to done
-        if (oldStatus !== 'done' && newStatus === 'done') {
+        if (oldStatus !== "done" && newStatus === "done") {
           this.$refs.confetti.triggerConfetti();
         }
-        
+
         try {
           // Convert image JSON string back to array for API
           let images = [];
@@ -228,18 +231,18 @@ const app = createApp({
               images = [];
             }
           }
-          
+
           const updateData = {
             title: task.title,
             description: task.description,
             status: task.status,
-            images: images
+            images: images,
           };
-          
+
           await fetch(`api.php/tasks/${taskId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            credentials: 'include',
+            credentials: "include",
             body: JSON.stringify(updateData),
           });
         } catch (error) {
@@ -272,17 +275,13 @@ const app = createApp({
       });
     },
     deleteDoneTasks() {
-      const doneTasks = this.tasks.filter(
-        (task) => task.status === "done"
-      );
+      const doneTasks = this.tasks.filter((task) => task.status === "done");
       if (doneTasks.length === 0) return;
       this.showDeleteModal = true;
     },
     async confirmDeleteDoneTasks() {
       try {
-        const doneTasks = this.tasks.filter(
-          (task) => task.status === "done"
-        );
+        const doneTasks = this.tasks.filter((task) => task.status === "done");
         for (const task of doneTasks) {
           await fetch(`api.php/tasks/${task.id}`, { method: "DELETE" });
         }
@@ -306,7 +305,9 @@ const app = createApp({
     },
     async handleDrop(event) {
       this.isDragOver = false;
-      const files = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith("image/"));
+      const files = Array.from(event.dataTransfer.files).filter((file) =>
+        file.type.startsWith("image/")
+      );
       if (files.length > 0) {
         await this.uploadImages(files);
       }
@@ -321,7 +322,7 @@ const app = createApp({
       }
 
       const formData = new FormData();
-      files.forEach(file => {
+      files.forEach((file) => {
         formData.append("images[]", file);
       });
 
@@ -335,11 +336,11 @@ const app = createApp({
 
         if (result.success) {
           // Add new images to existing ones
-          result.files.forEach(fileInfo => {
+          result.files.forEach((fileInfo) => {
             this.taskForm.images.push(fileInfo.filename);
             this.imagePreviews.push({
               filename: fileInfo.filename,
-              url: fileInfo.path
+              url: fileInfo.path,
             });
           });
         } else {
@@ -368,15 +369,15 @@ const app = createApp({
     editFromView() {
       this.taskForm = { ...this.viewingTask };
       this.editingTask = this.viewingTask;
-      
+
       // Convert images to the new format
       const images = this.getTaskImages(this.viewingTask);
       this.taskForm.images = images;
-      this.imagePreviews = images.map(img => ({
+      this.imagePreviews = images.map((img) => ({
         filename: img,
-        url: 'uploads/' + img
+        url: "uploads/" + img,
       }));
-      
+
       this.closeViewModal();
       this.showModal = true;
     },
@@ -430,15 +431,16 @@ const app = createApp({
       this.fullSizeImage = null;
     },
     async deleteUnusedImages() {
-      if (!confirm("Delete all unused images? This action cannot be undone.")) return;
-      
+      if (!confirm("Delete all unused images? This action cannot be undone."))
+        return;
+
       try {
         const response = await fetch("api.php/cleanup-images", {
           method: "POST",
-          credentials: 'include'
+          credentials: "include",
         });
         const result = await response.json();
-        
+
         if (result.success) {
           alert(`Deleted ${result.deleted_count} unused images`);
         } else {
@@ -456,7 +458,7 @@ const app = createApp({
 
         const items = e.clipboardData.items;
         const imageFiles = [];
-        
+
         for (let item of items) {
           if (item.type.startsWith("image/")) {
             const file = item.getAsFile();
@@ -465,7 +467,7 @@ const app = createApp({
             }
           }
         }
-        
+
         if (imageFiles.length > 0) {
           e.preventDefault();
           this.uploadImages(imageFiles);
@@ -499,11 +501,7 @@ const app = createApp({
         }
 
         // Cmd+Enter to save task when modal is open
-        if (
-          e.key === "Enter" &&
-          (e.metaKey || e.ctrlKey) &&
-          this.showModal
-        ) {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && this.showModal) {
           e.preventDefault();
           this.saveTask();
           return;
@@ -523,127 +521,128 @@ const app = createApp({
         }
       });
     },
-    
+
     // Settings methods
     loadSettings() {
-      const savedSettings = localStorage.getItem('kanbanSettings');
+      const savedSettings = localStorage.getItem("kanbanSettings");
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
-        
+
         // Migration: convert old darkMode setting to new themeMode
-        if (parsed.hasOwnProperty('darkMode') && !parsed.hasOwnProperty('themeMode')) {
-          parsed.themeMode = parsed.darkMode ? 'dark' : 'light';
+        if (
+          parsed.hasOwnProperty("darkMode") &&
+          !parsed.hasOwnProperty("themeMode")
+        ) {
+          parsed.themeMode = parsed.darkMode ? "dark" : "light";
           delete parsed.darkMode;
         }
-        
+
         this.settings = { ...this.settings, ...parsed };
       }
     },
-    
+
     saveSettings() {
-      localStorage.setItem('kanbanSettings', JSON.stringify(this.settings));
+      localStorage.setItem("kanbanSettings", JSON.stringify(this.settings));
       this.applyTheme();
     },
-    
+
     applyTheme() {
       const isDark = this.getEffectiveDarkMode();
       if (isDark) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add("dark");
       } else {
-        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove("dark");
       }
     },
-    
+
     getEffectiveDarkMode() {
       switch (this.settings.themeMode) {
-        case 'dark':
+        case "dark":
           return true;
-        case 'light':
+        case "light":
           return false;
-        case 'auto':
+        case "auto":
         default:
-          return window.matchMedia('(prefers-color-scheme: dark)').matches;
+          return window.matchMedia("(prefers-color-scheme: dark)").matches;
       }
     },
-    
+
     toggleThemeMode() {
-      const modes = ['auto', 'light', 'dark'];
+      const modes = ["auto", "light", "dark"];
       const currentIndex = modes.indexOf(this.settings.themeMode);
       const nextIndex = (currentIndex + 1) % modes.length;
       this.settings.themeMode = modes[nextIndex];
       this.saveSettings();
     },
-    
+
     setThemeMode(mode) {
       this.settings.themeMode = mode;
       this.saveSettings();
     },
-    
+
     openSettings() {
       this.showSettingsModal = true;
     },
-    
+
     closeSettings() {
       this.showSettingsModal = false;
     },
-    
+
     saveSettingsFromModal(newSettings) {
       this.settings = { ...this.settings, ...newSettings };
       this.saveSettings();
     },
-    
+
     async handleLogoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       if (file.size > 2 * 1024 * 1024) {
-        alert('Logo file too large. Maximum size is 2MB');
+        alert("Logo file too large. Maximum size is 2MB");
         return;
       }
-      
+
       const formData = new FormData();
-      formData.append('logo', file);
-      
+      formData.append("logo", file);
+
       try {
-        const response = await fetch('upload_logo.php', {
-          method: 'POST',
+        const response = await fetch("upload_logo.php", {
+          method: "POST",
           body: formData,
         });
-        
+
         const result = await response.json();
         if (result.success) {
           this.settings.appLogo = result.path;
           this.saveSettings();
         } else {
-          alert('Logo upload failed: ' + result.error);
+          alert("Logo upload failed: " + result.error);
         }
       } catch (error) {
-        console.error('Logo upload error:', error);
+        console.error("Logo upload error:", error);
       }
     },
-    
+
     removeLogo() {
       this.settings.appLogo = null;
       this.saveSettings();
     },
-    
+
     closeMobileMenu() {
       this.showMobileMenu = false;
     },
-    
-    
   },
 });
 
-app.component('login-form', Login);
-app.component('app-header', Header);
-app.component('dropdown-menu', DropdownMenu);
-app.component('settings-modal', SettingsModal);
-app.component('kanban-board', KanbanBoard);
-app.component('task-modal', TaskModal);
-app.component('delete-modal', DeleteModal);
-app.component('view-modal', ViewModal);
-app.component('image-modal', ImageModal);
-app.component('confetti', Confetti);
+app.component("login-form", Login);
+app.component("app-sidebar", Sidebar);
+app.component("dropdown-menu", DropdownMenu);
+app.component("settings-modal", SettingsModal);
+app.component("kanban-board", KanbanBoard);
+app.component("task-modal", TaskModal);
+app.component("delete-modal", DeleteModal);
+app.component("view-modal", ViewModal);
+app.component("image-modal", ImageModal);
+app.component("confetti", Confetti);
 
 app.mount("#app");

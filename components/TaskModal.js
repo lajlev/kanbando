@@ -29,7 +29,7 @@ const TaskModal = {
           ></textarea>
         </div>
         <div class="mb-5">
-          <label class="block mb-1 font-medium">Image</label>
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Image</label>
           <div
             class="drop-zone w-full p-4 border border-gray-300 rounded text-center cursor-pointer hover:bg-gray-50 transition-colors"
             :class="{ 'drag-over': isDragOver }"

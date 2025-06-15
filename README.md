@@ -26,7 +26,7 @@
 ### 🔐 **Authentication System**
 - **Secure login**: Session-based authentication with password hashing
 - **User management**: SQLite database with secure credential storage
-- **Default account**: `admin/admin` credentials created automatically
+- **Default account**: `admin/admin` credentials created automatically (can be changed in the SQLite database)
 - **Session persistence**: Maintains login across page refreshes
 
 ### 🎨 **Modern UI/UX**
@@ -74,7 +74,7 @@
 ```
 kanbando/
 ├── components/           # Vue.js components
-│   ├── Header.js        # App header with menu
+│   ├── Sidebar.js       # App sidebar with menu
 │   ├── Login.js         # Authentication form
 │   ├── KanbanBoard.js   # Main kanban interface
 │   ├── TaskModal.js     # Task creation/editing
@@ -130,6 +130,25 @@ Access the menu (top right) for administrative functions:
 
 ### Database Setup
 The SQLite database (`kanban.db`) is created automatically on first run. Default admin user is created with credentials `admin/admin`.
+
+To change the default login credentials, update the `users` table in the `kanban.db` SQLite database. The password must be stored as a bcrypt hash.
+
+Example SQL to update the first user:
+
+```sql
+UPDATE users
+SET username = 'admin',
+    password = '<bcrypt-hash-of-admin>'
+WHERE id = 1;
+```
+
+You can generate a bcrypt hash for the password using PHP:
+
+```php
+<?php
+echo password_hash('admin', PASSWORD_DEFAULT);
+?>
+```
 
 ### File Uploads
 - **Upload directory**: `uploads/` (must be writable)
@@ -220,6 +239,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ### Planned Features
 - [ ] User management interface
+- [ ] Multiple users support
 - [ ] Task labels and categories
 - [ ] Due dates and reminders
 - [ ] Team collaboration features

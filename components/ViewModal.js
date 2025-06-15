@@ -6,20 +6,20 @@ const ViewModal = {
       @click="closeViewModal"
     >
       <div
-        class="bg-white rounded-lg w-[50%] max-w-[90%] max-h-[80vh] overflow-y-auto shadow-2xl"
+        class="bg-white dark:bg-gray-800 rounded-lg w-[50%] max-w-[90%] max-h-[80vh] overflow-y-auto shadow-2xl"
         @click.stop
       >
         <!-- Header with title and edit button -->
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
           <div class="flex justify-between items-start mb-3">
             <h1
-              class="text-xl font-bold text-gray-900 leading-tight"
+              class="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight"
               v-if="viewingTask"
             >
               {{ viewingTask.title }}
             </h1>
             <button
-              class="ml-4 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 text-sm rounded transition-colors flex-shrink-0"
+              class="ml-4 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm rounded transition-colors flex-shrink-0"
               @click="editFromView"
             >
               ✏️
@@ -33,14 +33,14 @@ const ViewModal = {
             <span
               class="inline-block px-3 py-1 rounded-full text-sm font-medium"
               :class="{
-                    'bg-yellow-100 text-yellow-800': viewingTask.status === 'todo',
-                    'bg-blue-100 text-blue-800': viewingTask.status === 'progress', 
-                    'bg-green-100 text-green-800': viewingTask.status === 'done'
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': viewingTask.status === 'todo',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300': viewingTask.status === 'progress',
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': viewingTask.status === 'done'
                   }"
             >
               {{ getStatusName(viewingTask.status) }}
             </span>
-            <span class="text-sm text-gray-500">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
               ✨ {{ formatDate(viewingTask.created_at) }}
             </span>
           </div>
@@ -48,14 +48,14 @@ const ViewModal = {
 
         <!-- Content -->
         <div
-          class="p-6 cursor-pointer hover:bg-gray-50 transition-colors rounded-b-lg"
+          class="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-b-lg"
           @click="editFromView"
         >
           <div
             v-if="viewingTask && viewingTask.description"
             class="mb-6"
           >
-            <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <div class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
               {{ viewingTask.description }}
             </div>
           </div>
@@ -68,7 +68,7 @@ const ViewModal = {
               <div 
                 v-for="(image, index) in getTaskImages(viewingTask)"
                 :key="index"
-                class="bg-gray-50 rounded shadow-md cursor-pointer hover:opacity-75 transition-opacity"
+                class="bg-gray-50 dark:bg-gray-700 rounded shadow-md cursor-pointer hover:opacity-75 transition-opacity"
                 @click.stop="viewFullImage('uploads/' + image)"
               >
                 <img
@@ -81,10 +81,10 @@ const ViewModal = {
 
           <div
             v-if="!viewingTask || (!viewingTask.description && getTaskImages(viewingTask).length === 0)"
-            class="text-gray-500 italic text-center py-8"
+            class="text-gray-500 dark:text-gray-400 italic text-center py-8"
           >
             No additional details
-            <div class="text-xs mt-2 text-gray-400">Click to add content</div>
+            <div class="text-xs mt-2 text-gray-400 dark:text-gray-500">Click to add content</div>
           </div>
         </div>
       </div>
