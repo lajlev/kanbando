@@ -259,11 +259,15 @@ const app = createApp({
           dragClass: "sortable-drag",
           forceFallback: true,
           fallbackTolerance: 3,
+          preventOnFilter: false,
           onStart: (evt) => {
             document.body.style.cursor = "grabbing";
+            // Prevent text selection during drag
+            document.body.style.userSelect = "none";
           },
           onEnd: (evt) => {
             document.body.style.cursor = "";
+            document.body.style.userSelect = "";
             const taskId = evt.item.dataset.id;
             const newStatus = evt.to.id;
             this.updateTaskStatus(taskId, newStatus);
