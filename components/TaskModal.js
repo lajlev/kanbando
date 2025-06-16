@@ -37,6 +37,7 @@ const TaskModal = {
             @dragover.prevent="isDragOver = true"
             @dragleave.prevent="isDragOver = false"
             @drop.prevent="handleDrop"
+            @paste.prevent="handlePaste"
             tabindex="0"
           >
             <div v-if="imagePreviews.length > 0">
@@ -128,6 +129,44 @@ const TaskModal = {
     },
     removeImage(index) {
       this.$emit("remove-image", index);
+    },
+  },
+  methods: {
+    closeModal() {
+      this.$emit("close-modal");
+    },
+    saveTask() {
+      this.$emit("save-task");
+    },
+    confirmDeleteTask() {
+      this.$emit("confirm-delete-task");
+    },
+    handleFileSelect(event) {
+      this.$emit("handle-file-select", event);
+    },
+    handleDrop(event) {
+      this.$emit("handle-drop", event);
+    },
+    removeImage(index) {
+      this.$emit("remove-image", index);
+    },
+    handlePaste(event) {
+      const clipboardItems = event.clipboardData.items;
+      const files = [];
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item.kind === "file" && item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            files.push(file);
+          }
+        }
+      }
+      if (files.length > 0) {
+        // Create a synthetic event to pass files to the parent handler
+        const syntheticEvent = { target: { files } };
+        this.handleFileSelect(syntheticEvent);
+      }
     },
   },
 };

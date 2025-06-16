@@ -9,24 +9,13 @@ const Login = {
               <path d="M24.4168 21.0223C22.8836 22.1727 23.3358 23.8749 25.0807 24.5235C26.5575 25.0721 28.3684 24.7967 29.5175 23.6963C30.7167 22.5459 29.9591 20.8544 28.5078 20.3897C27.064 19.9272 25.6127 20.1463 24.4264 21.0362C24.4232 21.0319 24.42 21.0277 24.4168 21.0234V21.0223Z" fill="#3C3C3C"></path>
             </svg>
           </div>
-          <h2 class="mt-6 text-center text-3xl font-light text-gray-900">
+          <h2 class="mt-6 text-center text-2xl font-light text-gray-900">
             Sign in to Fruity Ideas 🍇 💡
           </h2>
         </div>
         <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
           <div class="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label for="username" class="sr-only">Username</label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                v-model="credentials.username"
-                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-              />
-            </div>
+            <!-- Username field removed as per request -->
             <div>
               <label for="password" class="sr-only">Password</label>
               <input
@@ -35,7 +24,7 @@ const Login = {
                 type="password"
                 required
                 v-model="credentials.password"
-                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
               />
             </div>
@@ -56,7 +45,7 @@ const Login = {
           </div>
           
           <div class="text-center text-xs text-gray-500">
-            Find login info in readme file.
+            Get password from Michael (Gatekeeper)
           </div>
         </form>
       </div>
@@ -65,7 +54,6 @@ const Login = {
   data() {
     return {
       credentials: {
-        username: "",
         password: "",
       },
       error: "",
@@ -85,7 +73,7 @@ const Login = {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify(this.credentials),
+          body: JSON.stringify({ password: this.credentials.password }),
         });
 
         const result = await response.json();

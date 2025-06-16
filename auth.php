@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -10,11 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-require_once 'database.php';
-
-$db = new Database();
-$pdo = $db->getConnection();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $path = $_SERVER['PATH_INFO'] ?? '/';
 
@@ -22,35 +20,39 @@ switch ($method) {
     case 'POST':
         if ($path === '/login') {
             $data = json_decode(file_get_contents('php://input'), true);
-            $username = $data['username'] ?? '';
             $password = $data['password'] ?? '';
             
-            if (empty($username) || empty($password)) {
+            if (empty($password)) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Username and password required']);
-                break;
+                echo json_encode(['success' => false, 'error' => 'Password required']);
+                exit;
             }
             
-            $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE username = ?");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Load password from .env file
+            $env = parse_ini_file(__DIR__ . '/.env');
+            $admin_password = $env['ADMIN_PASSWORD'] ?? '';
             
-            // Hardcoded admin/admin check
-            if ($username === 'admin' && $password === 'admin') {
-                $_SESSION['user_id'] = 0;
-                $_SESSION['username'] = 'admin';
-                echo json_encode(['success' => true, 'user' => ['id' => 0, 'username' => 'admin']]);
-            } elseif ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                echo json_encode(['success' => true, 'user' => ['id' => $user['id'], 'username' => $user['username']]]);
+            // Trim passwords to avoid whitespace issues
+            $password = trim($password);
+            $admin_password = trim($admin_password);
+            
+            // Debug output
+            error_log("Received password: " . $password);
+            error_log("Admin password: " . $admin_password);
+            
+            if ($password === $admin_password) {
+                $_SESSION['user_id'] = 1;
+                $_SESSION['username'] = 'fruityai';
+                echo json_encode(['success' => true, 'user' => ['id' => 1, 'username' => 'fruityai']]);
             } else {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
             }
+            exit;
         } elseif ($path === '/logout') {
             session_destroy();
             echo json_encode(['success' => true]);
+            exit;
         }
         break;
         
@@ -61,7 +63,11 @@ switch ($method) {
             } else {
                 echo json_encode(['authenticated' => false]);
             }
+            exit;
         }
         break;
 }
-?>
+
+http_response_code(404);
+echo json_encode(['success' => false, 'error' => 'Not Found']);
+exit;
