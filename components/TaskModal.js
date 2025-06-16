@@ -25,7 +25,7 @@ const TaskModal = {
           <textarea
             v-model="taskForm.description"
             placeholder="Description"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded h-20 resize-y focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded h-[30vh] resize-y focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           ></textarea>
         </div>
         <div class="mb-5">
