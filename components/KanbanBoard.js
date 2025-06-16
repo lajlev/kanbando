@@ -3,7 +3,7 @@ const KanbanBoard = {
     <div class="max-w-[95%] md:max-w-[90%] mx-auto px-3 md:px-5 py-4 md:py-6">
       <div class="flex flex-col md:flex-row gap-4 md:gap-5 min-h-[80vh] md:h-[90vh] w-full">
         <div
-          class="w-full md:w-[30%] bg-white dark:bg-gray-800 rounded-lg p-4 md:p-5 shadow-lg transition-all duration-300 flex flex-col border border-gray-200 dark:border-gray-700"
+          class="w-full md:w-[30%]transition-all duration-300 flex flex-col"
           v-for="status in statuses"
           :key="status.key"
         >
@@ -29,7 +29,7 @@ const KanbanBoard = {
             <div
               v-for="task in getTasksByStatus(status.key)"
               :key="task.id"
-              class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-3 mb-2.5 cursor-pointer transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600"
+              class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-2.5 cursor-pointer transition-all duration-200 hover:bg-white dark:hover:bg-gray-600 active:bg-gray-100 dark:active:bg-gray-600"
               :class="{ 'opacity-50': status.key === 'done' }"
               :data-id="task.id"
               @click="viewTask(task)"

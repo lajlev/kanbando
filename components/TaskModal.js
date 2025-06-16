@@ -10,26 +10,25 @@ const TaskModal = {
         @click.stop
       >
         <h3 class="text-lg font-semibold mb-6 text-gray-900 dark:text-white">
-          {{ editingTask ? 'Edit' : 'New Idea' }}
+          Idea
         </h3>
         <div class="mb-5">
-          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Title</label>
+          
           <input
             v-model="taskForm.title"
-            placeholder="Task title"
+            placeholder="Title"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           />
         </div>
         <div class="mb-5">
-          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Description</label>
+          
           <textarea
             v-model="taskForm.description"
-            placeholder="Task description"
+            placeholder="Description"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded h-20 resize-y focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           ></textarea>
         </div>
         <div class="mb-5">
-          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Image</label>
           <div
             class="drop-zone w-full p-4 border border-gray-300 rounded text-center cursor-pointer hover:bg-gray-50 transition-colors"
             :class="{ 'drag-over': isDragOver }"
@@ -62,10 +61,10 @@ const TaskModal = {
             </div>
             <div
               v-else
-              class="text-gray-500"
+              class="text-gray-400"
             >
-              <div class="text-lg mb-1">📎</div>
-              <div>Drop images here, click to browse, or paste</div>
+              <div class="text-xl mb-1">📎</div>
+              <div>Drop or paste images</div>
               <div class="text-xs mt-1">Max 5MB each • JPEG, PNG, GIF, WebP</div>
             </div>
           </div>
@@ -83,7 +82,7 @@ const TaskModal = {
             class="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             @click="saveTask"
           >
-            {{ editingTask ? 'Update' : 'Add' }}
+            {{ editingTask ? 'Update' : 'Create' }}
           </button>
           <button
             v-if="editingTask"
