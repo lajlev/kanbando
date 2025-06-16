@@ -29,8 +29,6 @@ const app = createApp({
         { key: "done", name: "Done" },
       ],
       settings: {
-        appName: "KanbanDo",
-        appLogo: null,
         themeMode: "auto", // auto, light, dark
       },
       showMobileMenu: false,
@@ -40,7 +38,6 @@ const app = createApp({
     this.loadSettings();
     this.applyTheme();
     this.showMobileMenu = false; // Ensure mobile menu is closed on init
-    console.log("Initial showMobileMenu:", this.showMobileMenu);
     await this.checkAuth();
     if (this.isAuthenticated) {
       await this.loadTasks();

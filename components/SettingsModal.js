@@ -16,51 +16,6 @@ const SettingsModal = {
           </div>
 
           <div class="space-y-6">
-            <!-- App Name -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                App Name
-              </label>
-              <input 
-                type="text" 
-                v-model="localSettings.appName"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter app name"
-              />
-            </div>
-
-            <!-- App Logo -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                App Logo
-              </label>
-              <div class="space-y-3">
-                <div v-if="localSettings.appLogo" class="flex items-center space-x-3">
-                  <img :src="localSettings.appLogo" alt="Logo" class="w-12 h-12 object-contain rounded">
-                  <button 
-                    @click="removeLogo"
-                    class="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Remove Logo
-                  </button>
-                </div>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  @change="handleLogoUpload"
-                  class="block w-full text-sm text-gray-500 dark:text-gray-400
-                         file:mr-4 file:py-2 file:px-4
-                         file:rounded-md file:border-0
-                         file:text-sm file:font-medium
-                         file:bg-blue-50 file:text-blue-700
-                         hover:file:bg-blue-100
-                         dark:file:bg-gray-700 dark:file:text-gray-300"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Maximum file size: 2MB. Recommended: Square image, 64x64px or larger.
-                </p>
-              </div>
-            </div>
 
             <!-- Theme Mode -->
             <div>
@@ -137,11 +92,11 @@ const SettingsModal = {
   `,
   props: {
     show: Boolean,
-    settings: Object
+    settings: Object,
   },
   data() {
     return {
-      localSettings: {}
+      localSettings: {},
     };
   },
   watch: {
@@ -149,26 +104,26 @@ const SettingsModal = {
       if (newVal) {
         this.localSettings = { ...this.settings };
       }
-    }
+    },
   },
-  emits: ['close', 'save', 'upload-logo', 'remove-logo'],
+  emits: ["close", "save", "upload-logo", "remove-logo"],
   methods: {
     close() {
-      this.$emit('close');
+      this.$emit("close");
     },
-    
+
     saveSettings() {
-      this.$emit('save', this.localSettings);
+      this.$emit("save", this.localSettings);
       this.close();
     },
-    
+
     handleLogoUpload(event) {
-      this.$emit('upload-logo', event);
+      this.$emit("upload-logo", event);
     },
-    
+
     removeLogo() {
       this.localSettings.appLogo = null;
-      this.$emit('remove-logo');
-    }
-  }
+      this.$emit("remove-logo");
+    },
+  },
 };
