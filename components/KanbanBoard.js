@@ -15,7 +15,7 @@ const KanbanBoard = {
               v-if="status.key === 'todo'"
               @click="openModal(status.key)"
               class="md:hidden w-6 h-6 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 flex items-center justify-center transition-colors"
-              title="Add new idea"
+              title="Create Task"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -71,7 +71,7 @@ const KanbanBoard = {
             class="hidden md:block w-full py-3 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-transparent rounded cursor-pointer text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 dark:hover:border-blue-400 dark:hover:text-blue-400 transition-colors mt-4 active:bg-blue-50 dark:active:bg-gray-700"
             @click="openModal(status.key)"
           >
-            New Idea
+            Create Task
           </button>
         </div>
       </div>

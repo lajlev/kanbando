@@ -89,7 +89,7 @@ const TaskModal = {
             class="px-3 py-1.5 text-red-500 text-sm hover:bg-red-50 rounded transition-colors"
             @click="confirmDeleteTask"
           >
-            Delete Task
+            Delete
           </button>
         </div>
       </div>
