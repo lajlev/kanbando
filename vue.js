@@ -24,7 +24,7 @@ const app = createApp({
       isDragOver: false,
       fullSizeImage: null,
       statuses: [
-        { key: "todo", name: "Ideas" },
+        { key: "todo", name: "Backlog" },
         { key: "progress", name: "In Progress" },
         { key: "done", name: "Done" },
       ],
@@ -123,6 +123,14 @@ const app = createApp({
         }
 
         this.tasks = await response.json();
+
+        // Sort tasks by status and order
+        this.tasks.sort((a, b) => {
+          if (a.status === b.status) {
+            return (a.order !== undefined ? a.order : 0) - (b.order !== undefined ? b.order : 0);
+          }
+          return this.statuses.findIndex(s => s.key === a.status) - this.statuses.findIndex(s => s.key === b.status);
+        });
       } catch (error) {
         console.error("Error loading tasks:", error);
       }
@@ -249,8 +257,12 @@ const app = createApp({
     },
     initSortable() {
       this.statuses.forEach((status) => {
-        const element = document.getElementById(status.key);
-        Sortable.create(element, {
+        const columnElement = document.getElementById(status.key);
+        if (!columnElement) return;
+        // Find the scroll container div inside the column
+        const scrollContainer = columnElement.querySelector(".overflow-y-auto");
+        if (!scrollContainer) return;
+        Sortable.create(scrollContainer, {
           group: "shared",
           animation: 200,
           easing: "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -260,6 +272,7 @@ const app = createApp({
           forceFallback: true,
           fallbackTolerance: 3,
           preventOnFilter: false,
+          draggable: "> div", // Make only direct child divs (task cards) draggable
           onStart: (evt) => {
             document.body.style.cursor = "grabbing";
             // Prevent text selection during drag
@@ -269,8 +282,46 @@ const app = createApp({
             document.body.style.cursor = "";
             document.body.style.userSelect = "";
             const taskId = evt.item.dataset.id;
-            const newStatus = evt.to.id;
-            this.updateTaskStatus(taskId, newStatus);
+            const newStatus = evt.to.dataset.status;
+            console.log("Drag ended: taskId =", taskId, "newStatus =", newStatus);
+
+            // Update the status of the dragged task
+            this.updateTaskStatus(taskId, newStatus).then(() => {
+              // After status update, update order of all tasks in the new status column
+              const columnElement = evt.to;
+              const taskElements = Array.from(columnElement.querySelectorAll("> div"));
+              const updatedOrders = [];
+
+              taskElements.forEach((el, index) => {
+                const id = el.dataset.id;
+                const task = this.tasks.find(t => t.id == id);
+                if (task) {
+                  task.order = index;
+                  task.status = newStatus;
+                  updatedOrders.push({ id: task.id, order: index, status: newStatus });
+                }
+              });
+
+              // Send batch update for order and status
+              updatedOrders.forEach(async (taskUpdate) => {
+                try {
+                  await fetch(`api.php/tasks/${taskUpdate.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      title: this.tasks.find(t => t.id == taskUpdate.id).title,
+                      description: this.tasks.find(t => t.id == taskUpdate.id).description,
+                      status: taskUpdate.status,
+                      images: this.getTaskImages(this.tasks.find(t => t.id == taskUpdate.id)),
+                      order: taskUpdate.order
+                    }),
+                  });
+                } catch (error) {
+                  console.error("Error updating task order:", error);
+                }
+              });
+            });
           },
         });
       });
@@ -384,7 +435,7 @@ const app = createApp({
     },
     getStatusName(status) {
       const statusMap = {
-        todo: "Ideas",
+        todo: "Backlog",
         progress: "In Progress",
         done: "Done",
       };

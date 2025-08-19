@@ -77,24 +77,56 @@
 /* Mobile improvements */
 @media (max-width: 768px) {
   /* Improve tap targets on mobile */
-  button, .cursor-pointer {
+  button,
+  .cursor-pointer {
     min-height: 44px;
   }
-  
+
   /* Better active states for mobile */
   .active\:bg-blue-50:active {
     background-color: #eff6ff;
   }
-  
+
   .dark .active\:bg-gray-700:active {
     background-color: #374151;
   }
-  
+
   .active\:bg-gray-200:active {
     background-color: #e5e7eb;
   }
-  
+
   .dark .active\:bg-gray-600:active {
     background-color: #4b5563;
   }
+}
+.fade-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  width: 100%;
+  z-index: 10;
+  background: linear-gradient(
+    to bottom,
+    rgb(243 244 246 / var(--tw-bg-opacity, 1)),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.fade-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  width: 100%;
+  z-index: 10;
+  background: linear-gradient(
+    to top,
+    rgb(243 244 246 / var(--tw-bg-opacity, 1)),
+    transparent
+  );
+  pointer-events: none;
 }

@@ -10,7 +10,7 @@ const TaskModal = {
         @click.stop
       >
         <h3 class="text-lg font-semibold mb-6 text-gray-900 dark:text-white">
-          Idea
+          Task
         </h3>
         <div class="mb-5">
           

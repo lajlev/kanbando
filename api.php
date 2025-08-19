@@ -28,7 +28,7 @@ $path = $_SERVER['PATH_INFO'] ?? '/';
 switch ($method) {
     case 'GET':
         if ($path === '/tasks') {
-            $stmt = $pdo->query("SELECT * FROM tasks ORDER BY created_at DESC");
+            $stmt = $pdo->query("SELECT * FROM tasks ORDER BY status, \"order\" ASC");
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         }
         break;
@@ -37,8 +37,9 @@ switch ($method) {
         if ($path === '/tasks') {
             $data = json_decode(file_get_contents('php://input'), true);
             $images = isset($data['images']) ? json_encode($data['images']) : null;
-            $stmt = $pdo->prepare("INSERT INTO tasks (title, description, status, image) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$data['title'], $data['description'] ?? '', $data['status'] ?? 'todo', $images]);
+            $order = $data['order'] ?? 0;
+            $stmt = $pdo->prepare("INSERT INTO tasks (title, description, status, image, \"order\") VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$data['title'], $data['description'] ?? '', $data['status'] ?? 'todo', $images, $order]);
             echo json_encode(['id' => $pdo->lastInsertId()]);
         } elseif ($path === '/cleanup-images') {
             try {
@@ -102,8 +103,9 @@ switch ($method) {
             $id = $matches[1];
             $data = json_decode(file_get_contents('php://input'), true);
             $images = isset($data['images']) ? json_encode($data['images']) : null;
-            $stmt = $pdo->prepare("UPDATE tasks SET title = ?, description = ?, status = ?, image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            $stmt->execute([$data['title'], $data['description'], $data['status'], $images, $id]);
+            $order = $data['order'] ?? 0;
+            $stmt = $pdo->prepare("UPDATE tasks SET title = ?, description = ?, status = ?, image = ?, \"order\" = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([$data['title'], $data['description'], $data['status'], $images, $order, $id]);
             echo json_encode(['success' => true]);
         }
         break;

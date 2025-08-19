@@ -23,56 +23,71 @@ const KanbanBoard = {
             </button>
           </div>
           <div
+            v-if="status.key === 'todo'"
+            class="hidden md:block w-full py-3 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-transparent rounded cursor-pointer text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 dark:hover:border-blue-400 dark:hover:text-blue-400 transition-colors mb-4 active:bg-blue-50 dark:active:bg-gray-700"
+            @click="openModal(status.key)"
+          >
+            Create Task
+          </div>
+          <div
             :id="status.key"
-            class="flex-1 min-h-0 transition-all duration-200"
+            class="relative flex-1 min-h-0 transition-all duration-200"
           >
             <div
-              v-for="task in getTasksByStatus(status.key)"
-              :key="task.id"
-              class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-2.5 cursor-pointer transition-all duration-200 hover:bg-white dark:hover:bg-gray-600 active:bg-gray-100 dark:active:bg-gray-600"
-              :class="{ 'opacity-50': status.key === 'done' }"
-              :data-id="task.id"
-              @click="viewTask(task)"
+              v-show="showTopFade[status.key]"
+              class="fade-top pointer-events-none absolute top-0 left-0 right-0 h-8 z-10"
+            ></div>
+            <div
+              ref="scrollContainers"
+              :data-status="status.key"
+              class="overflow-y-auto h-full"
+              @scroll="handleScroll($event, status.key)"
             >
-              <div class="font-medium mb-1 text-gray-900 dark:text-gray-100">
-                {{ task.title }}
-              </div>
               <div
-                class="text-xs text-gray-600 dark:text-gray-400"
-                v-if="task.description"
+                v-for="task in getTasksByStatus(status.key)"
+                :key="task.id"
+                class=" border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-2.5 cursor-pointer transition-all duration-200 hover:bg-white dark:hover:bg-gray-600 active:bg-gray-100 dark:active:bg-gray-600"
+                :class="{ 'opacity-50': status.key === 'done' }"
+                :data-id="task.id"
+                @click="viewTask(task)"
               >
-                {{ task.description }}
-              </div>
-              <div
-                v-if="getTaskImages(task).length > 0"
-                class="mt-2"
-              >
-                <div class="flex gap-1 flex-wrap">
-                  <img
-                    v-for="(image, index) in getTaskImages(task).slice(0, 3)"
-                    :key="index"
-                    :src="'uploads/' + image"
-                    class="h-12 w-auto rounded cursor-pointer hover:opacity-75 transition-opacity"
-                    @click.stop="viewFullImage('uploads/' + image)"
-                  />
-                  <div 
-                    v-if="getTaskImages(task).length > 3"
-                    class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600 cursor-pointer hover:bg-gray-300"
-                    @click.stop="viewTask(task)"
-                  >
-                    +{{ getTaskImages(task).length - 3 }}
+                <div class="font-medium mb-1 text-gray-900 dark:text-gray-100">
+                  {{ task.title }}
+                </div>
+                <div
+                  class="text-xs text-gray-600 dark:text-gray-400"
+                  v-if="task.description"
+                >
+                  {{ task.description }}
+                </div>
+                <div
+                  v-if="getTaskImages(task).length > 0"
+                  class="mt-2"
+                >
+                  <div class="flex gap-1 flex-wrap">
+                    <img
+                      v-for="(image, index) in getTaskImages(task).slice(0, 3)"
+                      :key="index"
+                      :src="'uploads/' + image"
+                      class="h-12 w-auto rounded cursor-pointer hover:opacity-75 transition-opacity"
+                      @click.stop="viewFullImage('uploads/' + image)"
+                    />
+                    <div
+                      v-if="getTaskImages(task).length > 3"
+                      class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600 cursor-pointer hover:bg-gray-300"
+                      @click.stop="viewTask(task)"
+                    >
+                      +{{ getTaskImages(task).length - 3 }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div
+              v-show="showBottomFade[status.key]"
+              class="fade-bottom pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10"
+            ></div>
           </div>
-          <button
-            v-if="status.key === 'todo'"
-            class="hidden md:block w-full py-3 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-transparent rounded cursor-pointer text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 dark:hover:border-blue-400 dark:hover:text-blue-400 transition-colors mt-4 active:bg-blue-50 dark:active:bg-gray-700"
-            @click="openModal(status.key)"
-          >
-            Create Task
-          </button>
         </div>
       </div>
     </div>
@@ -105,6 +120,74 @@ const KanbanBoard = {
       } catch (e) {
         return [];
       }
+    },
+  },
+  data() {
+    return {
+      showTopFade: {},
+      showBottomFade: {},
+    };
+  },
+  mounted() {
+    this.$nextTick(() => {
+      // Delay to ensure scroll containers are fully rendered and sized
+      setTimeout(() => {
+        this.statuses.forEach((status) => {
+          this.updateFadeVisibility(status.key);
+        });
+      }, 100);
+    });
+  },
+  methods: {
+    getTasksByStatus(status) {
+      return this.tasks.filter((task) => task.status === status);
+    },
+    viewTask(task) {
+      this.$emit("view-task", task);
+    },
+    viewFullImage(imageSrc) {
+      this.$emit("view-full-image", imageSrc);
+    },
+    deleteDoneTasks() {
+      this.$emit("delete-done-tasks");
+    },
+    openModal(status) {
+      this.$emit("open-modal", status);
+    },
+    getTaskImages(task) {
+      if (!task.image) return [];
+      try {
+        return JSON.parse(task.image);
+      } catch (e) {
+        return [];
+      }
+    },
+    handleScroll(event, statusKey) {
+      const el = event.target;
+      this.showTopFade = {
+        ...this.showTopFade,
+        [statusKey]: el.scrollTop > 0,
+      };
+      this.showBottomFade = {
+        ...this.showBottomFade,
+        [statusKey]: el.scrollTop + el.clientHeight < el.scrollHeight,
+      };
+    },
+    updateFadeVisibility(statusKey) {
+      this.$nextTick(() => {
+        const el = this.$refs.scrollContainers.find(
+          (el) => el.dataset.status === statusKey
+        );
+        if (!el) return;
+        this.showTopFade = {
+          ...this.showTopFade,
+          [statusKey]: el.scrollTop > 0,
+        };
+        this.showBottomFade = {
+          ...this.showBottomFade,
+          [statusKey]: el.scrollTop + el.clientHeight < el.scrollHeight,
+        };
+      });
     },
   },
 };

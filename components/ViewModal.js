@@ -107,7 +107,7 @@ const ViewModal = {
     },
     getStatusName(status) {
       const statusMap = {
-        todo: "Ideas",
+        todo: "Backlog",
         progress: "In Progress",
         done: "Done",
       };
