@@ -11,7 +11,21 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>💡</text></svg>"
     />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+      // Check if we're on fruity.lillefar.com to load production build
+      const hostname = window.location.hostname;
+      const isProduction = hostname === 'fruity.lillefar.com';
+      const vueScript = document.createElement('script');
+      vueScript.src = isProduction
+        ? "https://unpkg.com/vue@3/dist/vue.global.prod.js"
+        : "https://unpkg.com/vue@3/dist/vue.global.js";
+      document.head.appendChild(vueScript);
+      
+      if (isProduction) {
+        console.log = function() {};
+        console.error = function() {};
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
