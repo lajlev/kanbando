@@ -17,6 +17,7 @@ export default {
             <h1
               class="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight"
               v-if="viewingTask"
+              @click="editFromView"
             >
               <span class="relative">
                 <span
