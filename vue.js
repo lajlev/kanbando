@@ -522,10 +522,17 @@ const app = createApp({
     viewTask(task) {
       this.viewingTask = task;
       this.showViewModal = true;
+      
+      // Update URL to include task ID
+      const taskId = task.id;
+      history.pushState({taskId}, '', `/${taskId}`);
     },
     closeViewModal() {
       this.showViewModal = false;
       this.viewingTask = null;
+      
+      // Restore the URL to base URL when modal is closed
+      history.pushState({}, '', '/');
     },
     editFromView() {
       this.taskForm = { ...this.viewingTask };

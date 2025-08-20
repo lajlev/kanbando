@@ -51,8 +51,24 @@ const KanbanBoard = {
                 :data-id="task.id"
                 @click="viewTask(task)"
               >
-                <div class="font-medium text-gray-900 dark:text-gray-100">
+                <div class="font-medium text-gray-900 dark:text-gray-100 relative">
+                  <span
+                    class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400"
+                    @click.stop="copyTaskUrl(task.id)"
+                    title="Click to copy link"
+                  >
+                    #{{ task.id }}
+                  </span>
                   {{ task.title }}
+                  
+                  <!-- Copy feedback animation -->
+                  <div
+                    v-if="copyFeedback.visible && copyFeedback.taskId === task.id"
+                    class="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-md shadow-md animate-fade-in-out flex items-center"
+                    style="animation: fadeInOut 2s ease-in-out; z-index: 9999;"
+                  >
+                    <span class="mr-1">📋</span> Link copied
+                  </div>
                 </div>
               </div>
             </div>
@@ -99,6 +115,11 @@ const KanbanBoard = {
     return {
       showTopFade: {},
       showBottomFade: {},
+      copyFeedback: {
+        visible: false,
+        taskId: null,
+        timer: null,
+      },
     };
   },
   mounted() {
@@ -134,6 +155,41 @@ const KanbanBoard = {
       } catch (e) {
         return [];
       }
+    },
+    copyTaskUrl(taskId) {
+      // Prevent the click from triggering the viewTask method
+      event.stopPropagation();
+
+      // Create the URL with the task ID
+      const url = `${window.location.origin}/${taskId}`;
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          // Show a cute animation feedback
+          this.showCopyFeedback(taskId);
+        })
+        .catch((err) => {
+          console.error("Failed to copy URL: ", err);
+        });
+    },
+
+    showCopyFeedback(taskId) {
+      // Clear any existing timer
+      if (this.copyFeedback.timer) {
+        clearTimeout(this.copyFeedback.timer);
+      }
+
+      // Show the feedback
+      this.copyFeedback.visible = true;
+      this.copyFeedback.taskId = taskId;
+
+      // Hide after 2 seconds
+      this.copyFeedback.timer = setTimeout(() => {
+        this.copyFeedback.visible = false;
+        this.copyFeedback.taskId = null;
+      }, 2000);
     },
     handleScroll(event, statusKey) {
       const el = event.target;

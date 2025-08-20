@@ -16,6 +16,24 @@ const ViewModal = {
               class="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight"
               v-if="viewingTask"
             >
+              <span class="relative">
+                <span
+                  class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400"
+                  @click.stop="copyTaskUrl(viewingTask.id)"
+                  title="Click to copy link"
+                >
+                  #{{ viewingTask.id }}
+                </span>
+                
+                <!-- Copy feedback animation -->
+                <div
+                  v-if="copyFeedback.visible"
+                  class="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-md shadow-md animate-fade-in-out flex items-center"
+                  style="animation: fadeInOut 2s ease-in-out; white-space: nowrap; z-index: 9999;"
+                >
+                  <span class="mr-1">📋</span> Link copied
+                </div>
+              </span>
               {{ viewingTask.title }}
             </h1>
             <button
@@ -94,6 +112,14 @@ const ViewModal = {
     showViewModal: Boolean,
     viewingTask: Object,
   },
+  data() {
+    return {
+      copyFeedback: {
+        visible: false,
+        timer: null,
+      },
+    };
+  },
   emits: ["close-view-modal", "edit-from-view", "view-full-image"],
   methods: {
     closeViewModal() {
@@ -144,6 +170,56 @@ const ViewModal = {
       } catch (e) {
         return [];
       }
+    },
+    copyTaskUrl(taskId) {
+      // Prevent the click from triggering other events
+      event.stopPropagation();
+
+      // Create the URL with the task ID
+      const url = `${window.location.origin}/${taskId}`;
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          // Show a brief visual feedback
+          alert("Link copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy URL: ", err);
+        });
+    },
+    copyTaskUrl(taskId) {
+      // Prevent the click from triggering other events
+      event.stopPropagation();
+
+      // Create the URL with the task ID
+      const url = `${window.location.origin}/${taskId}`;
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          // Show a cute animation feedback
+          this.showCopyFeedback();
+        })
+        .catch((err) => {
+          console.error("Failed to copy URL: ", err);
+        });
+    },
+    showCopyFeedback() {
+      // Clear any existing timer
+      if (this.copyFeedback.timer) {
+        clearTimeout(this.copyFeedback.timer);
+      }
+
+      // Show the feedback
+      this.copyFeedback.visible = true;
+
+      // Hide after 2 seconds
+      this.copyFeedback.timer = setTimeout(() => {
+        this.copyFeedback.visible = false;
+      }, 2000);
     },
   },
 };
