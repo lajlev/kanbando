@@ -1,3 +1,4 @@
 .claude
 uploads/*
 kanban.db
+.DS_Store
