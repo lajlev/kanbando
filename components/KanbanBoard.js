@@ -1,3 +1,6 @@
+import { getTaskImages } from '../utils/utils.js';
+
+// Define the component
 const KanbanBoard = {
   template: `
     <div class="max-w-[95%] md:max-w-[90%] mx-auto px-3 md:px-5 py-4 md:py-6">
@@ -102,14 +105,7 @@ const KanbanBoard = {
     openModal(status) {
       this.$emit("open-modal", status);
     },
-    getTaskImages(task) {
-      if (!task.image) return [];
-      try {
-        return JSON.parse(task.image);
-      } catch (e) {
-        return [];
-      }
-    },
+    // Using imported getTaskImages function
   },
   data() {
     return {
@@ -148,14 +144,7 @@ const KanbanBoard = {
     openModal(status) {
       this.$emit("open-modal", status);
     },
-    getTaskImages(task) {
-      if (!task.image) return [];
-      try {
-        return JSON.parse(task.image);
-      } catch (e) {
-        return [];
-      }
-    },
+    // Using imported getTaskImages function
     copyTaskUrl(taskId) {
       // Prevent the click from triggering the viewTask method
       event.stopPropagation();
@@ -220,3 +209,6 @@ const KanbanBoard = {
     },
   },
 };
+
+// Export the component
+export default KanbanBoard;

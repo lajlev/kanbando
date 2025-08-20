@@ -1,4 +1,6 @@
-const ViewModal = {
+import { formatDate, getTaskImages, getStatusName } from '../utils/utils.js';
+
+export default {
   template: `
     <div
       v-if="showViewModal"
@@ -131,64 +133,8 @@ const ViewModal = {
     viewFullImage(imageSrc) {
       this.$emit("view-full-image", imageSrc);
     },
-    getStatusName(status) {
-      const statusMap = {
-        todo: "Backlog",
-        progress: "In Progress",
-        done: "Done",
-      };
-      return statusMap[status] || status;
-    },
-    formatDate(dateString) {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffMinutes < 1) {
-        return "just now";
-      } else if (diffMinutes < 60) {
-        return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
-      } else if (diffHours < 24) {
-        return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-      } else if (diffDays < 30) {
-        return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
-      } else {
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const year = String(date.getFullYear()).slice(-2);
-        return `${month}-${day}-${year}`;
-      }
-    },
-    getTaskImages(task) {
-      if (!task.image) return [];
-      try {
-        return JSON.parse(task.image);
-      } catch (e) {
-        return [];
-      }
-    },
-    copyTaskUrl(taskId) {
-      // Prevent the click from triggering other events
-      event.stopPropagation();
-
-      // Create the URL with the task ID
-      const url = `${window.location.origin}/${taskId}`;
-
-      // Copy to clipboard
-      navigator.clipboard
-        .writeText(url)
-        .then(() => {
-          // Show a brief visual feedback
-          alert("Link copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Failed to copy URL: ", err);
-        });
-    },
+    // Using imported utility functions
+    // Removed duplicate method
     copyTaskUrl(taskId) {
       // Prevent the click from triggering other events
       event.stopPropagation();

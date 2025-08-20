@@ -1,4 +1,4 @@
-const DropdownMenu = {
+export default {
   template: `
     <div
       v-if="show"

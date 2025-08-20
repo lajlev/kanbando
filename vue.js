@@ -1,5 +1,28 @@
-// Import API services
+// Import API services and utilities
 import { api, authApi, tasksApi, uploadApi } from './services/api.js';
+import {
+  formatDate,
+  getTaskImages,
+  createImagePreviews,
+  validateFileSize,
+  createImageFormData,
+  createLogoFormData,
+  getStatusName,
+  filterImageFiles,
+  extractImagesFromClipboard
+} from './utils/utils.js';
+
+// Import components
+import KanbanBoard from './components/KanbanBoard.js';
+import Login from './components/Login.js';
+import Sidebar from './components/Sidebar.js';
+import DropdownMenu from './components/DropdownMenu.js';
+import SettingsModal from './components/SettingsModal.js';
+import TaskModal from './components/TaskModal.js';
+import DeleteModal from './components/DeleteModal.js';
+import ViewModal from './components/ViewModal.js';
+import ImageModal from './components/ImageModal.js';
+import Confetti from './components/Confetti.js';
 
 const { createApp } = Vue;
 
@@ -167,12 +190,9 @@ const app = createApp({
       this.editingTask = task;
 
       // Convert images to the new format
-      const images = this.getTaskImages(task);
+      const images = getTaskImages(task);
       this.taskForm.images = images;
-      this.imagePreviews = images.map((img) => ({
-        filename: img,
-        url: "uploads/" + img,
-      }));
+      this.imagePreviews = createImagePreviews(images);
 
       this.showModal = true;
     },
@@ -353,7 +373,7 @@ const app = createApp({
                       status: oldStatus,
                       title: task.title,
                       description: task.description,
-                      images: this.getTaskImages(task)
+                      images: getTaskImages(task)
                     });
                   }
                 });
@@ -376,7 +396,7 @@ const app = createApp({
                       status: newStatus,
                       title: task.title,
                       description: task.description,
-                      images: this.getTaskImages(task)
+                      images: getTaskImages(task)
                     });
                   } else {
                     // For cross-column moves, update both order and status
@@ -387,7 +407,7 @@ const app = createApp({
                       status: newStatus,
                       title: task.title,
                       description: task.description,
-                      images: this.getTaskImages(task)
+                      images: getTaskImages(task)
                     });
                   }
                 }
@@ -442,9 +462,7 @@ const app = createApp({
     },
     async handleDrop(event) {
       this.isDragOver = false;
-      const files = Array.from(event.dataTransfer.files).filter((file) =>
-        file.type.startsWith("image/")
-      );
+      const files = filterImageFiles(event.dataTransfer);
       if (files.length > 0) {
         await this.uploadImages(files);
       }
@@ -452,17 +470,13 @@ const app = createApp({
     async uploadImages(files) {
       // Validate file sizes
       for (let file of files) {
-        if (file.size > 5 * 1024 * 1024) {
+        if (!validateFileSize(file)) {
           alert(`File "${file.name}" too large. Maximum size is 5MB`);
           return;
         }
       }
 
-      const formData = new FormData();
-      files.forEach((file) => {
-        // The PHP script expects 'images' not 'images[]'
-        formData.append("images[]", file);
-      });
+      const formData = createImageFormData(files);
 
       try {
         console.log("Uploading images...");
@@ -514,57 +528,20 @@ const app = createApp({
       this.editingTask = this.viewingTask;
 
       // Convert images to the new format
-      const images = this.getTaskImages(this.viewingTask);
+      const images = getTaskImages(this.viewingTask);
       this.taskForm.images = images;
-      this.imagePreviews = images.map((img) => ({
-        filename: img,
-        url: "uploads/" + img,
-      }));
+      this.imagePreviews = createImagePreviews(images);
 
       this.closeViewModal();
       this.showModal = true;
     },
     getStatusName(status) {
-      const statusMap = {
-        todo: "Backlog",
-        progress: "In Progress",
-        done: "Done",
-      };
-      return statusMap[status] || status;
+      return getStatusName(status);
     },
     formatDate(dateString) {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffMinutes < 1) {
-        return "just now";
-      } else if (diffMinutes < 60) {
-        return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
-      } else if (diffHours < 24) {
-        return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-      } else if (diffDays < 30) {
-        return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
-      } else {
-        // For very old dates, fall back to absolute format
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const year = String(date.getFullYear()).slice(-2);
-        return `${month}-${day}-${year}`;
-      }
+      return formatDate(dateString);
     },
-    getTaskImages(task) {
-      if (!task.image) return [];
-      try {
-        return JSON.parse(task.image);
-      } catch (e) {
-        return [];
-      }
-    },
+    // Using imported getTaskImages function
     viewFullImage(imageSrc) {
       this.fullSizeImage = imageSrc;
       this.showImageModal = true;
@@ -595,17 +572,7 @@ const app = createApp({
         // Only handle paste when modal is open
         if (!this.showModal) return;
 
-        const items = e.clipboardData.items;
-        const imageFiles = [];
-
-        for (let item of items) {
-          if (item.type.startsWith("image/")) {
-            const file = item.getAsFile();
-            if (file) {
-              imageFiles.push(file);
-            }
-          }
-        }
+        const imageFiles = extractImagesFromClipboard(e);
 
         if (imageFiles.length > 0) {
           e.preventDefault();
@@ -741,8 +708,7 @@ const app = createApp({
         return;
       }
 
-      const formData = new FormData();
-      formData.append("logo", file);
+      const formData = createLogoFormData(file);
 
       try {
         console.log("Uploading logo...");

@@ -1,4 +1,4 @@
-const DeleteModal = {
+export default {
   template: `
     <div
       v-if="showDeleteModal"

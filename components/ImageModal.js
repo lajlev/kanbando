@@ -1,4 +1,4 @@
-const ImageModal = {
+export default {
   template: `
     <div
       v-if="showImageModal"

@@ -1,4 +1,4 @@
-const Sidebar = {
+export default {
   template: `
     <aside class="fixed left-0 top-0 h-full w-24 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 z-40 hidden md:flex flex-col transition-all duration-300">
       <div class="p-2 pt-6">

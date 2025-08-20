@@ -1,4 +1,4 @@
-const Confetti = {
+export default {
   template: `
     <div
       v-if="showConfetti"

@@ -1,4 +1,6 @@
-const Login = {
+import { authApi } from '../services/api.js';
+
+export default {
   template: `
     <div class="min-h-screen bg-gray-100 flex items-center justify-center">
       <div class="max-w-md w-full space-y-8">
@@ -67,16 +69,9 @@ const Login = {
       this.isLoading = true;
 
       try {
-        const response = await fetch("auth.php/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ password: this.credentials.password }),
+        const result = await authApi.login({
+          password: this.credentials.password
         });
-
-        const result = await response.json();
 
         if (result.success) {
           this.$emit("login-success", result.user);

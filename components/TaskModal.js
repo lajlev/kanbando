@@ -1,4 +1,6 @@
-const TaskModal = {
+import { extractImagesFromClipboard } from '../utils/utils.js';
+
+export default {
   template: `
     <div
       v-if="showModal"
@@ -131,17 +133,7 @@ const TaskModal = {
       this.$emit("remove-image", index);
     },
     handlePaste(event) {
-      const clipboardItems = event.clipboardData.items;
-      const files = [];
-      for (let i = 0; i < clipboardItems.length; i++) {
-        const item = clipboardItems[i];
-        if (item.kind === "file" && item.type.startsWith("image/")) {
-          const file = item.getAsFile();
-          if (file) {
-            files.push(file);
-          }
-        }
-      }
+      const files = extractImagesFromClipboard(event);
       if (files.length > 0) {
         // Create a synthetic event to pass files to the parent handler
         const syntheticEvent = { target: { files } };
