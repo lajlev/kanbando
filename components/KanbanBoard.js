@@ -51,35 +51,8 @@ const KanbanBoard = {
                 :data-id="task.id"
                 @click="viewTask(task)"
               >
-                <div class="font-medium mb-1 text-gray-900 dark:text-gray-100">
+                <div class="font-medium text-gray-900 dark:text-gray-100">
                   {{ task.title }}
-                </div>
-                <div
-                  class="text-xs text-gray-600 dark:text-gray-400"
-                  v-if="task.description"
-                >
-                  {{ task.description }}
-                </div>
-                <div
-                  v-if="getTaskImages(task).length > 0"
-                  class="mt-2"
-                >
-                  <div class="flex gap-1 flex-wrap">
-                    <img
-                      v-for="(image, index) in getTaskImages(task).slice(0, 3)"
-                      :key="index"
-                      :src="'uploads/' + image"
-                      class="h-12 w-auto rounded cursor-pointer hover:opacity-75 transition-opacity"
-                      @click.stop="viewFullImage('uploads/' + image)"
-                    />
-                    <div
-                      v-if="getTaskImages(task).length > 3"
-                      class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600 cursor-pointer hover:bg-gray-300"
-                      @click.stop="viewTask(task)"
-                    >
-                      +{{ getTaskImages(task).length - 3 }}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
