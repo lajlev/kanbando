@@ -44,6 +44,9 @@ const app = createApp({
       this.initSortable();
       this.setupKeyboardShortcuts();
       this.setupPasteListener();
+      
+      // Check if URL contains a task ID and open that task
+      this.checkUrlForTaskId();
     }
 
     // Listen for system theme changes
@@ -798,6 +801,29 @@ const app = createApp({
 
     closeMobileMenu() {
       this.showMobileMenu = false;
+    },
+    
+    // Handle direct access to task URLs
+    checkUrlForTaskId() {
+      const path = window.location.pathname;
+      const match = path.match(/^\/(\d+)$/);
+      
+      if (match && match[1]) {
+        const taskId = match[1];
+        console.log(`Direct access to task ID: ${taskId}`);
+        
+        // Find the task with this ID
+        const task = this.tasks.find(t => t.id == taskId);
+        
+        if (task) {
+          // Open the task view
+          this.viewTask(task);
+        } else {
+          console.error(`Task with ID ${taskId} not found`);
+          // Redirect to home page if task not found
+          history.pushState({}, '', '/');
+        }
+      }
     },
   },
 });
