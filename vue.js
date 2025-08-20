@@ -1,3 +1,6 @@
+// Import API services
+import { api, authApi, tasksApi, uploadApi } from './services/api.js';
+
 const { createApp } = Vue;
 
 const app = createApp({
@@ -76,15 +79,18 @@ const app = createApp({
   methods: {
     async checkAuth() {
       try {
-        const response = await fetch("auth.php/check", {
-          credentials: "include",
-        });
-        const result = await response.json();
+        const result = await authApi.checkAuth();
+        
+        if (result.error) {
+          console.error("Auth check error:", result.error);
+          this.isAuthenticated = false;
+          return;
+        }
 
         this.isAuthenticated = result.authenticated;
         this.currentUser = result.user || null;
       } catch (error) {
-        // Handle auth check error
+        console.error("Auth check error:", error);
         this.isAuthenticated = false;
       } finally {
         this.isCheckingAuth = false;
@@ -102,42 +108,38 @@ const app = createApp({
 
     async logout() {
       try {
-        await fetch("auth.php/logout", {
-          method: "POST",
-          credentials: "include",
-        });
+        const result = await authApi.logout();
+        
+        if (result.error) {
+          console.error("Logout error:", result.error);
+          return;
+        }
+        
         this.isAuthenticated = false;
         this.currentUser = null;
         this.tasks = [];
       } catch (error) {
-        // Handle logout error
+        console.error("Logout error:", error);
       }
     },
 
     async loadTasks() {
       console.log("Loading tasks...");
       try {
-        const response = await fetch("api.php/tasks", {
-          credentials: "include",
-        });
-
-        console.log("Load tasks response status:", response.status);
+        const result = await tasksApi.getTasks();
         
-        if (response.status === 401) {
-          console.error("Authentication error: User not authenticated");
-          this.isAuthenticated = false;
+        if (result.error) {
+          console.error("Error loading tasks:", result.error);
+          
+          if (result.status === 401) {
+            this.isAuthenticated = false;
+          }
+          
           return;
         }
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error loading tasks:", response.status, errorText);
-          return;
-        }
-
-        const data = await response.json();
-        console.log("Tasks loaded:", data.length);
-        this.tasks = data;
+        
+        console.log("Tasks loaded:", result.length);
+        this.tasks = result;
 
         // Sort tasks by status and order (negative orders appear at the top)
         this.tasks.sort((a, b) => {
@@ -201,33 +203,21 @@ const app = createApp({
         
         console.log("Task form data:", JSON.stringify(taskData));
 
-        let response;
+        let result;
         if (this.editingTask) {
           console.log(`Updating task ${this.editingTask.id}`);
-          response = await fetch(`api.php/tasks/${this.editingTask.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(taskData),
-          });
+          result = await tasksApi.updateTask(this.editingTask.id, taskData);
         } else {
           console.log("Creating new task with order -1");
-          response = await fetch("api.php/tasks", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(taskData),
-          });
+          result = await tasksApi.createTask(taskData);
         }
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("API error:", response.status, errorText);
-          alert(`Failed to save task: ${response.status} ${response.statusText}`);
+        if (result.error) {
+          console.error("API error:", result.error);
+          alert(`Failed to save task: ${result.error}`);
           return;
         }
         
-        const result = await response.json();
         console.log("API response:", result);
 
         await this.loadTasks();
@@ -251,14 +241,19 @@ const app = createApp({
     },
     async deleteTask(id) {
       try {
-        await fetch(`api.php/tasks/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
+        const result = await tasksApi.deleteTask(id);
+        
+        if (result.error) {
+          console.error("Task deletion error:", result.error);
+          alert(`Failed to delete task: ${result.error}`);
+          return;
+        }
+        
         await this.loadTasks();
         this.closeModal();
       } catch (error) {
-        // Handle task deletion error
+        console.error("Task deletion error:", error);
+        alert("Error deleting task: " + (error.message || "Unknown error"));
       }
     },
     async updateTaskStatus(taskId, newStatus) {
@@ -284,21 +279,20 @@ const app = createApp({
             }
           }
 
-          const updateData = {
+          const result = await tasksApi.updateTaskStatus(taskId, newStatus, images, {
             title: task.title,
-            description: task.description,
-            status: task.status,
-            images: images,
-          };
-
-          await fetch(`api.php/tasks/${taskId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(updateData),
+            description: task.description
           });
+          
+          if (result.error) {
+            console.error("Task status update error:", result.error);
+            // Revert the status change in the UI if the API call failed
+            task.status = oldStatus;
+          }
         } catch (error) {
-          // Handle task update error
+          console.error("Task status update error:", error);
+          // Revert the status change in the UI if the API call failed
+          task.status = oldStatus;
         }
       }
     },
@@ -402,30 +396,8 @@ const app = createApp({
               // Send batch update for order and status
               console.log("Updating task orders:", updatedOrders);
               
-              // Use Promise.all to wait for all updates to complete
-              Promise.all(updatedOrders.map(taskUpdate => {
-                console.log(`Updating task ${taskUpdate.id} order to ${taskUpdate.order}`);
-                return fetch(`api.php/tasks/${taskUpdate.id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  credentials: "include",
-                  body: JSON.stringify({
-                    title: taskUpdate.title,
-                    description: taskUpdate.description,
-                    status: taskUpdate.status,
-                    images: taskUpdate.images,
-                    order: taskUpdate.order
-                  }),
-                })
-                .then(response => {
-                  if (!response.ok) {
-                    return response.text().then(text => {
-                      throw new Error(`Failed to update task order: ${response.status} ${text}`);
-                    });
-                  }
-                  return response.json();
-                });
-              }))
+              // Use the batch update method from the API service
+              tasksApi.batchUpdateTaskOrders(updatedOrders)
               .then(results => {
                 console.log("All task orders updated successfully");
               })
@@ -446,13 +418,14 @@ const app = createApp({
     async confirmDeleteDoneTasks() {
       try {
         const doneTasks = this.tasks.filter((task) => task.status === "done");
-        for (const task of doneTasks) {
-          await fetch(`api.php/tasks/${task.id}`, { method: "DELETE" });
-        }
+        const deletePromises = doneTasks.map(task => tasksApi.deleteTask(task.id));
+        
+        await Promise.all(deletePromises);
         await this.loadTasks();
         this.closeDeleteModal();
       } catch (error) {
-        // Handle error deleting done tasks
+        console.error("Error deleting done tasks:", error);
+        alert("Error deleting done tasks. Please try again.");
       }
     },
     closeDeleteModal() {
@@ -487,16 +460,14 @@ const app = createApp({
 
       const formData = new FormData();
       files.forEach((file) => {
+        // The PHP script expects 'images' not 'images[]'
         formData.append("images[]", file);
       });
 
       try {
-        const response = await fetch("upload.php", {
-          method: "POST",
-          body: formData,
-        });
-
-        const result = await response.json();
+        console.log("Uploading images...");
+        const result = await uploadApi.uploadImages(formData);
+        console.log("Upload result:", result);
 
         if (result.success) {
           // Add new images to existing ones
@@ -508,10 +479,11 @@ const app = createApp({
             });
           });
         } else {
-          alert("Upload failed: " + result.error);
+          console.error("Upload failed:", result.error);
+          alert("Upload failed: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        // Handle upload error
+        console.error("Upload error:", error);
         alert("Upload failed. Please try again.");
       }
     },
@@ -606,19 +578,15 @@ const app = createApp({
         return;
 
       try {
-        const response = await fetch("api.php/cleanup-images", {
-          method: "POST",
-          credentials: "include",
-        });
-        const result = await response.json();
+        const result = await tasksApi.cleanupImages();
 
         if (result.success) {
           alert(`Deleted ${result.deleted_count} unused images`);
         } else {
-          alert("Error deleting unused images: " + result.error);
+          alert("Error deleting unused images: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        // Handle error deleting unused images
+        console.error("Error deleting unused images:", error);
         alert("Error deleting unused images. Please try again.");
       }
     },
@@ -777,20 +745,20 @@ const app = createApp({
       formData.append("logo", file);
 
       try {
-        const response = await fetch("upload_logo.php", {
-          method: "POST",
-          body: formData,
-        });
-
-        const result = await response.json();
+        console.log("Uploading logo...");
+        const result = await uploadApi.uploadLogo(formData);
+        console.log("Logo upload result:", result);
+        
         if (result.success) {
           this.settings.appLogo = result.path;
           this.saveSettings();
         } else {
-          alert("Logo upload failed: " + result.error);
+          console.error("Logo upload failed:", result.error);
+          alert("Logo upload failed: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        // Handle logo upload error
+        console.error("Logo upload error:", error);
+        alert("Logo upload failed. Please try again.");
       }
     },
 
