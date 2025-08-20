@@ -110,26 +110,7 @@ const TaskModal = {
     "handle-drop",
     "remove-image",
   ],
-  methods: {
-    closeModal() {
-      this.$emit("close-modal");
-    },
-    saveTask() {
-      this.$emit("save-task");
-    },
-    confirmDeleteTask() {
-      this.$emit("confirm-delete-task");
-    },
-    handleFileSelect(event) {
-      this.$emit("handle-file-select", event);
-    },
-    handleDrop(event) {
-      this.$emit("handle-drop", event);
-    },
-    removeImage(index) {
-      this.$emit("remove-image", index);
-    },
-  },
+  // First methods block removed to fix duplicate methods issue
   methods: {
     closeModal() {
       this.$emit("close-modal");

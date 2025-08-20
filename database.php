@@ -20,6 +20,7 @@ class Database {
             description TEXT,
             status TEXT DEFAULT 'todo',
             image TEXT,
+            \"order\" INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )";

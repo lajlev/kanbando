@@ -112,27 +112,43 @@ const app = createApp({
     },
 
     async loadTasks() {
+      console.log("Loading tasks...");
       try {
         const response = await fetch("api.php/tasks", {
           credentials: "include",
         });
 
+        console.log("Load tasks response status:", response.status);
+        
         if (response.status === 401) {
+          console.error("Authentication error: User not authenticated");
           this.isAuthenticated = false;
           return;
         }
 
-        this.tasks = await response.json();
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Error loading tasks:", response.status, errorText);
+          return;
+        }
 
-        // Sort tasks by status and order
+        const data = await response.json();
+        console.log("Tasks loaded:", data.length);
+        this.tasks = data;
+
+        // Sort tasks by status and order (negative orders appear at the top)
         this.tasks.sort((a, b) => {
           if (a.status === b.status) {
-            return (a.order !== undefined ? a.order : 0) - (b.order !== undefined ? b.order : 0);
+            const aOrder = a.order !== undefined ? parseInt(a.order) : 0;
+            const bOrder = b.order !== undefined ? parseInt(b.order) : 0;
+            return aOrder - bOrder;
           }
           return this.statuses.findIndex(s => s.key === a.status) - this.statuses.findIndex(s => s.key === b.status);
         });
+        
+        console.log("Tasks sorted:", this.tasks.map(t => ({ id: t.id, title: t.title, status: t.status, order: t.order })));
       } catch (error) {
-        // Handle task loading error
+        console.error("Task loading error:", error);
       }
     },
     openModal(status = "todo") {
@@ -162,27 +178,54 @@ const app = createApp({
       this.isDragOver = false;
     },
     async saveTask() {
-      if (!this.taskForm.title.trim()) return;
+      if (!this.taskForm.title.trim()) {
+        console.error("Task creation failed: Empty title");
+        alert("Task title cannot be empty");
+        return;
+      }
 
       try {
         const wasEditing = !!this.editingTask;
         const taskId = this.editingTask?.id;
+        
+        // Create a copy of the task form data to modify
+        const taskData = { ...this.taskForm };
+        
+        // For new tasks, set order to -1 so they appear at the top
+        if (!wasEditing) {
+          taskData.order = -1;
+        }
+        
+        console.log("Task form data:", JSON.stringify(taskData));
 
+        let response;
         if (this.editingTask) {
-          await fetch(`api.php/tasks/${this.editingTask.id}`, {
+          console.log(`Updating task ${this.editingTask.id}`);
+          response = await fetch(`api.php/tasks/${this.editingTask.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify(this.taskForm),
+            body: JSON.stringify(taskData),
           });
         } else {
-          await fetch("api.php/tasks", {
+          console.log("Creating new task with order -1");
+          response = await fetch("api.php/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify(this.taskForm),
+            body: JSON.stringify(taskData),
           });
         }
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API error:", response.status, errorText);
+          alert(`Failed to save task: ${response.status} ${response.statusText}`);
+          return;
+        }
+        
+        const result = await response.json();
+        console.log("API response:", result);
 
         await this.loadTasks();
         this.closeModal();
@@ -195,7 +238,8 @@ const app = createApp({
           }
         }
       } catch (error) {
-        // Handle task saving error
+        console.error("Task saving error:", error);
+        alert("Error saving task: " + (error.message || "Unknown error"));
       }
     },
     confirmDeleteTask() {
@@ -299,7 +343,7 @@ const app = createApp({
               if (!isSameColumn) {
                 // Update source column order
                 const sourceColumnElement = evt.from;
-                const sourceTaskElements = Array.from(sourceColumnElement.querySelectorAll("> div"));
+                const sourceTaskElements = Array.from(sourceColumnElement.children).filter(el => el.tagName === 'DIV');
                 
                 sourceTaskElements.forEach((el, index) => {
                   const id = el.dataset.id;
@@ -320,7 +364,7 @@ const app = createApp({
               
               // Always update destination column order
               const destColumnElement = evt.to;
-              const destTaskElements = Array.from(destColumnElement.querySelectorAll("> div"));
+              const destTaskElements = Array.from(destColumnElement.children).filter(el => el.tagName === 'DIV');
               
               destTaskElements.forEach((el, index) => {
                 const id = el.dataset.id;
@@ -353,23 +397,38 @@ const app = createApp({
               });
               
               // Send batch update for order and status
-              updatedOrders.forEach(async (taskUpdate) => {
-                try {
-                  await fetch(`api.php/tasks/${taskUpdate.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({
-                      title: taskUpdate.title,
-                      description: taskUpdate.description,
-                      status: taskUpdate.status,
-                      images: taskUpdate.images,
-                      order: taskUpdate.order
-                    }),
-                  });
-                } catch (error) {
-                  // Handle task order update error
-                }
+              console.log("Updating task orders:", updatedOrders);
+              
+              // Use Promise.all to wait for all updates to complete
+              Promise.all(updatedOrders.map(taskUpdate => {
+                console.log(`Updating task ${taskUpdate.id} order to ${taskUpdate.order}`);
+                return fetch(`api.php/tasks/${taskUpdate.id}`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({
+                    title: taskUpdate.title,
+                    description: taskUpdate.description,
+                    status: taskUpdate.status,
+                    images: taskUpdate.images,
+                    order: taskUpdate.order
+                  }),
+                })
+                .then(response => {
+                  if (!response.ok) {
+                    return response.text().then(text => {
+                      throw new Error(`Failed to update task order: ${response.status} ${text}`);
+                    });
+                  }
+                  return response.json();
+                });
+              }))
+              .then(results => {
+                console.log("All task orders updated successfully");
+              })
+              .catch(error => {
+                console.error("Error updating task orders:", error);
+                alert("Error updating task order. Please refresh the page.");
               });
             });
           },
