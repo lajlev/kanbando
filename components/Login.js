@@ -79,7 +79,6 @@ export default {
           this.error = result.error || "Login failed";
         }
       } catch (error) {
-        console.error("Login error:", error);
         this.error = "Network error. Please try again.";
       } finally {
         this.isLoading = false;

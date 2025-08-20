@@ -160,7 +160,7 @@ const KanbanBoard = {
           this.showCopyFeedback(taskId);
         })
         .catch((err) => {
-          console.error("Failed to copy URL: ", err);
+          // Failed to copy URL
         });
     },
 

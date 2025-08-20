@@ -150,7 +150,7 @@ export default {
           this.showCopyFeedback();
         })
         .catch((err) => {
-          console.error("Failed to copy URL: ", err);
+          // Failed to copy URL
         });
     },
     showCopyFeedback() {

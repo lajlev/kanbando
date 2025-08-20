@@ -42,13 +42,11 @@ class ApiService {
     }
 
     try {
-      console.log(`API ${requestOptions.method} request to: ${url}`);
       
       const response = await fetch(url, requestOptions);
       
       // Handle 401 Unauthorized globally
       if (response.status === 401) {
-        console.error('Authentication error: User not authenticated');
         // You could trigger a global auth error event here
         return { error: 'Unauthorized', status: 401 };
       }
@@ -56,8 +54,7 @@ class ApiService {
       // For non-ok responses, try to parse error message
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`API error: ${response.status} ${errorText}`);
-        return { 
+        return {
           error: errorText || response.statusText,
           status: response.status 
         };
@@ -72,7 +69,6 @@ class ApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
       return { error: error.message || 'Unknown error', isNetworkError: true };
     }
   }

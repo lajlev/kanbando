@@ -105,7 +105,6 @@ const app = createApp({
         const result = await authApi.checkAuth();
         
         if (result.error) {
-          console.error("Auth check error:", result.error);
           this.isAuthenticated = false;
           return;
         }
@@ -113,7 +112,6 @@ const app = createApp({
         this.isAuthenticated = result.authenticated;
         this.currentUser = result.user || null;
       } catch (error) {
-        console.error("Auth check error:", error);
         this.isAuthenticated = false;
       } finally {
         this.isCheckingAuth = false;
@@ -134,7 +132,6 @@ const app = createApp({
         const result = await authApi.logout();
         
         if (result.error) {
-          console.error("Logout error:", result.error);
           return;
         }
         
@@ -142,18 +139,15 @@ const app = createApp({
         this.currentUser = null;
         this.tasks = [];
       } catch (error) {
-        console.error("Logout error:", error);
+        // Handle logout error
       }
     },
 
     async loadTasks() {
-      console.log("Loading tasks...");
       try {
         const result = await tasksApi.getTasks();
         
         if (result.error) {
-          console.error("Error loading tasks:", result.error);
-          
           if (result.status === 401) {
             this.isAuthenticated = false;
           }
@@ -161,7 +155,6 @@ const app = createApp({
           return;
         }
         
-        console.log("Tasks loaded:", result.length);
         this.tasks = result;
 
         // Sort tasks by status and order (negative orders appear at the top)
@@ -174,9 +167,8 @@ const app = createApp({
           return this.statuses.findIndex(s => s.key === a.status) - this.statuses.findIndex(s => s.key === b.status);
         });
         
-        console.log("Tasks sorted:", this.tasks.map(t => ({ id: t.id, title: t.title, status: t.status, order: t.order })));
       } catch (error) {
-        console.error("Task loading error:", error);
+        // Handle task loading error
       }
     },
     openModal(status = "todo") {
@@ -204,7 +196,6 @@ const app = createApp({
     },
     async saveTask() {
       if (!this.taskForm.title.trim()) {
-        console.error("Task creation failed: Empty title");
         alert("Task title cannot be empty");
         return;
       }
@@ -220,25 +211,18 @@ const app = createApp({
         if (!wasEditing) {
           taskData.order = -1;
         }
-        
-        console.log("Task form data:", JSON.stringify(taskData));
 
         let result;
         if (this.editingTask) {
-          console.log(`Updating task ${this.editingTask.id}`);
           result = await tasksApi.updateTask(this.editingTask.id, taskData);
         } else {
-          console.log("Creating new task with order -1");
           result = await tasksApi.createTask(taskData);
         }
         
         if (result.error) {
-          console.error("API error:", result.error);
           alert(`Failed to save task: ${result.error}`);
           return;
         }
-        
-        console.log("API response:", result);
 
         await this.loadTasks();
         this.closeModal();
@@ -251,7 +235,6 @@ const app = createApp({
           }
         }
       } catch (error) {
-        console.error("Task saving error:", error);
         alert("Error saving task: " + (error.message || "Unknown error"));
       }
     },
@@ -264,7 +247,6 @@ const app = createApp({
         const result = await tasksApi.deleteTask(id);
         
         if (result.error) {
-          console.error("Task deletion error:", result.error);
           alert(`Failed to delete task: ${result.error}`);
           return;
         }
@@ -272,7 +254,6 @@ const app = createApp({
         await this.loadTasks();
         this.closeModal();
       } catch (error) {
-        console.error("Task deletion error:", error);
         alert("Error deleting task: " + (error.message || "Unknown error"));
       }
     },
@@ -305,12 +286,10 @@ const app = createApp({
           });
           
           if (result.error) {
-            console.error("Task status update error:", result.error);
             // Revert the status change in the UI if the API call failed
             task.status = oldStatus;
           }
         } catch (error) {
-          console.error("Task status update error:", error);
           // Revert the status change in the UI if the API call failed
           task.status = oldStatus;
         }
@@ -414,15 +393,13 @@ const app = createApp({
               });
               
               // Send batch update for order and status
-              console.log("Updating task orders:", updatedOrders);
               
               // Use the batch update method from the API service
               tasksApi.batchUpdateTaskOrders(updatedOrders)
               .then(results => {
-                console.log("All task orders updated successfully");
+                // Task orders updated successfully
               })
               .catch(error => {
-                console.error("Error updating task orders:", error);
                 alert("Error updating task order. Please refresh the page.");
               });
             });
@@ -444,7 +421,6 @@ const app = createApp({
         await this.loadTasks();
         this.closeDeleteModal();
       } catch (error) {
-        console.error("Error deleting done tasks:", error);
         alert("Error deleting done tasks. Please try again.");
       }
     },
@@ -479,9 +455,7 @@ const app = createApp({
       const formData = createImageFormData(files);
 
       try {
-        console.log("Uploading images...");
         const result = await uploadApi.uploadImages(formData);
-        console.log("Upload result:", result);
 
         if (result.success) {
           // Add new images to existing ones
@@ -493,11 +467,9 @@ const app = createApp({
             });
           });
         } else {
-          console.error("Upload failed:", result.error);
           alert("Upload failed: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        console.error("Upload error:", error);
         alert("Upload failed. Please try again.");
       }
     },
@@ -563,7 +535,6 @@ const app = createApp({
           alert("Error deleting unused images: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        console.error("Error deleting unused images:", error);
         alert("Error deleting unused images. Please try again.");
       }
     },
@@ -711,19 +682,15 @@ const app = createApp({
       const formData = createLogoFormData(file);
 
       try {
-        console.log("Uploading logo...");
         const result = await uploadApi.uploadLogo(formData);
-        console.log("Logo upload result:", result);
         
         if (result.success) {
           this.settings.appLogo = result.path;
           this.saveSettings();
         } else {
-          console.error("Logo upload failed:", result.error);
           alert("Logo upload failed: " + (result.error || "Unknown error"));
         }
       } catch (error) {
-        console.error("Logo upload error:", error);
         alert("Logo upload failed. Please try again.");
       }
     },
@@ -744,7 +711,6 @@ const app = createApp({
       
       if (match && match[1]) {
         const taskId = match[1];
-        console.log(`Direct access to task ID: ${taskId}`);
         
         // Find the task with this ID
         const task = this.tasks.find(t => t.id == taskId);
@@ -753,7 +719,6 @@ const app = createApp({
           // Open the task view
           this.viewTask(task);
         } else {
-          console.error(`Task with ID ${taskId} not found`);
           // Redirect to home page if task not found
           history.pushState({}, '', '/');
         }

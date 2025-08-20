@@ -44,7 +44,6 @@ export function getTaskImages(task) {
     const images = JSON.parse(task.image);
     return Array.isArray(images) ? images : [];
   } catch (e) {
-    console.error("Error parsing task images:", e);
     return [];
   }
 }
