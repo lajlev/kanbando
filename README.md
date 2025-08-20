@@ -8,7 +8,7 @@
 
 ### 🎯 **Core Kanban Functionality**
 - **Three-column workflow**: Ideas → In Progress → Done
-- **Drag & drop**: Smooth task movement between columns using SortableJS
+- **Drag & drop**: Smooth task movement between columns using SortableJS with persistent card ordering
 - **Task management**: Create, edit, view, and delete tasks
 - **Rich task details**: Title, description, and multiple image attachments
 
@@ -109,7 +109,7 @@ kanbando/
 
 - **Create**: Click "New Task" button in Ideas column
 - **Edit**: Click on any task to view/edit details
-- **Move**: Drag tasks between columns
+- **Move**: Drag tasks between columns or reorder within the same column (positions are saved automatically)
 - **Delete**: Use delete button in edit mode
 - **Images**: Support for multiple images per task
 
@@ -251,6 +251,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - [ ] Large image files may cause upload timeouts
 - [ ] Confetti animation performance on older devices
 - [ ] Session timeout handling could be improved
+- [x] Card positions are now saved when dragged to a new position
 
 ---
 

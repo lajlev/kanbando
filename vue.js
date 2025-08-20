@@ -67,7 +67,7 @@ const app = createApp({
 
   watch: {
     showMobileMenu(newVal, oldVal) {
-      console.log("showMobileMenu changed from", oldVal, "to", newVal);
+      // Watch for mobile menu state changes
     },
   },
   methods: {
@@ -81,7 +81,7 @@ const app = createApp({
         this.isAuthenticated = result.authenticated;
         this.currentUser = result.user || null;
       } catch (error) {
-        console.error("Auth check error:", error);
+        // Handle auth check error
         this.isAuthenticated = false;
       } finally {
         this.isCheckingAuth = false;
@@ -107,7 +107,7 @@ const app = createApp({
         this.currentUser = null;
         this.tasks = [];
       } catch (error) {
-        console.error("Logout error:", error);
+        // Handle logout error
       }
     },
 
@@ -132,7 +132,7 @@ const app = createApp({
           return this.statuses.findIndex(s => s.key === a.status) - this.statuses.findIndex(s => s.key === b.status);
         });
       } catch (error) {
-        console.error("Error loading tasks:", error);
+        // Handle task loading error
       }
     },
     openModal(status = "todo") {
@@ -195,7 +195,7 @@ const app = createApp({
           }
         }
       } catch (error) {
-        console.error("Error saving task:", error);
+        // Handle task saving error
       }
     },
     confirmDeleteTask() {
@@ -211,7 +211,7 @@ const app = createApp({
         await this.loadTasks();
         this.closeModal();
       } catch (error) {
-        console.error("Error deleting task:", error);
+        // Handle task deletion error
       }
     },
     async updateTaskStatus(taskId, newStatus) {
@@ -251,7 +251,7 @@ const app = createApp({
             body: JSON.stringify(updateData),
           });
         } catch (error) {
-          console.error("Error updating task:", error);
+          // Handle task update error
         }
       }
     },
@@ -283,25 +283,75 @@ const app = createApp({
             document.body.style.userSelect = "";
             const taskId = evt.item.dataset.id;
             const newStatus = evt.to.dataset.status;
-            console.log("Drag ended: taskId =", taskId, "newStatus =", newStatus);
-
-            // Update the status of the dragged task
-            this.updateTaskStatus(taskId, newStatus).then(() => {
-              // After status update, update order of all tasks in the new status column
-              const columnElement = evt.to;
-              const taskElements = Array.from(columnElement.querySelectorAll("> div"));
+            const oldStatus = evt.from.dataset.status;
+            const isSameColumn = newStatus === oldStatus;
+            
+            // Process drag end event
+            
+            const updatePromise = isSameColumn
+              ? Promise.resolve() // If same column, no need to update status
+              : this.updateTaskStatus(taskId, newStatus);
+              
+            updatePromise.then(() => {
               const updatedOrders = [];
-
-              taskElements.forEach((el, index) => {
+              
+              // If columns are different, update both source and destination columns
+              if (!isSameColumn) {
+                // Update source column order
+                const sourceColumnElement = evt.from;
+                const sourceTaskElements = Array.from(sourceColumnElement.querySelectorAll("> div"));
+                
+                sourceTaskElements.forEach((el, index) => {
+                  const id = el.dataset.id;
+                  const task = this.tasks.find(t => t.id == id);
+                  if (task) {
+                    task.order = index;
+                    updatedOrders.push({
+                      id: task.id,
+                      order: index,
+                      status: oldStatus,
+                      title: task.title,
+                      description: task.description,
+                      images: this.getTaskImages(task)
+                    });
+                  }
+                });
+              }
+              
+              // Always update destination column order
+              const destColumnElement = evt.to;
+              const destTaskElements = Array.from(destColumnElement.querySelectorAll("> div"));
+              
+              destTaskElements.forEach((el, index) => {
                 const id = el.dataset.id;
                 const task = this.tasks.find(t => t.id == id);
                 if (task) {
                   task.order = index;
-                  task.status = newStatus;
-                  updatedOrders.push({ id: task.id, order: index, status: newStatus });
+                  if (isSameColumn) {
+                    // For same column moves, we only need to update the order
+                    updatedOrders.push({
+                      id: task.id,
+                      order: index,
+                      status: newStatus,
+                      title: task.title,
+                      description: task.description,
+                      images: this.getTaskImages(task)
+                    });
+                  } else {
+                    // For cross-column moves, update both order and status
+                    task.status = newStatus;
+                    updatedOrders.push({
+                      id: task.id,
+                      order: index,
+                      status: newStatus,
+                      title: task.title,
+                      description: task.description,
+                      images: this.getTaskImages(task)
+                    });
+                  }
                 }
               });
-
+              
               // Send batch update for order and status
               updatedOrders.forEach(async (taskUpdate) => {
                 try {
@@ -310,15 +360,15 @@ const app = createApp({
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
                     body: JSON.stringify({
-                      title: this.tasks.find(t => t.id == taskUpdate.id).title,
-                      description: this.tasks.find(t => t.id == taskUpdate.id).description,
+                      title: taskUpdate.title,
+                      description: taskUpdate.description,
                       status: taskUpdate.status,
-                      images: this.getTaskImages(this.tasks.find(t => t.id == taskUpdate.id)),
+                      images: taskUpdate.images,
                       order: taskUpdate.order
                     }),
                   });
                 } catch (error) {
-                  console.error("Error updating task order:", error);
+                  // Handle task order update error
                 }
               });
             });
@@ -340,7 +390,7 @@ const app = createApp({
         await this.loadTasks();
         this.closeDeleteModal();
       } catch (error) {
-        console.error("Error deleting done tasks:", error);
+        // Handle error deleting done tasks
       }
     },
     closeDeleteModal() {
@@ -399,7 +449,7 @@ const app = createApp({
           alert("Upload failed: " + result.error);
         }
       } catch (error) {
-        console.error("Upload error:", error);
+        // Handle upload error
         alert("Upload failed. Please try again.");
       }
     },
@@ -499,7 +549,7 @@ const app = createApp({
           alert("Error deleting unused images: " + result.error);
         }
       } catch (error) {
-        console.error("Error deleting unused images:", error);
+        // Handle error deleting unused images
         alert("Error deleting unused images. Please try again.");
       }
     },
@@ -671,7 +721,7 @@ const app = createApp({
           alert("Logo upload failed: " + result.error);
         }
       } catch (error) {
-        console.error("Logo upload error:", error);
+        // Handle logo upload error
       }
     },
 
