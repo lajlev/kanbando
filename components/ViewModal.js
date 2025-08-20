@@ -133,6 +133,9 @@ export default {
     viewFullImage(imageSrc) {
       this.$emit("view-full-image", imageSrc);
     },
+    getStatusName,
+    formatDate,
+    getTaskImages,
     // Using imported utility functions
     // Removed duplicate method
     copyTaskUrl(taskId) {
