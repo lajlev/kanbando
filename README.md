@@ -66,10 +66,6 @@
    http://localhost:8000
    ```
 
-4. **Login with default credentials**:
-   - Username: `admin`
-   - Password: `admin`
-
 ### Directory Structure
 ```
 kanbando/
