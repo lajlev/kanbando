@@ -2,3 +2,4 @@
 uploads/*
 kanban.db
 .DS_Store
+php_errors.log
