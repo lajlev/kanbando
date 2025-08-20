@@ -19,6 +19,7 @@ export default {
           <input
             v-model="taskForm.title"
             placeholder="Title"
+            ref="titleInput"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           />
         </div>
@@ -140,5 +141,17 @@ export default {
         this.handleFileSelect(syntheticEvent);
       }
     },
+  },
+  watch: {
+    showModal(newVal) {
+      if (newVal) {
+        // Focus the title input when the modal is opened
+        this.$nextTick(() => {
+          if (this.$refs.titleInput) {
+            this.$refs.titleInput.focus();
+          }
+        });
+      }
+    }
   },
 };
